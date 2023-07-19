@@ -1,4 +1,3 @@
-// import vuetify from "vite-plugin-vuetify";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
     // devtools: { enabled: true },
@@ -8,21 +7,29 @@ export default defineNuxtConfig({
     //         autoprefixer: {},
     //     },
     // },
-    // build: {
-    //     transpile: ["vuetify"],
-    // },
-    // vite: {
-    //     // ssr: {
-    //     //     noExternal: ["vuetify"],
-    //     // },
-    //     plugins: [vuetify()],
-    // },
     modules: ["@invictus.codes/nuxt-vuetify"],
-    // modules: [
-    //     async (options, nuxt) => {
-    //         nuxt.hooks.hook("vite:extendConfig", (config) => {
-    //             config.plugins?.push(vuetify());
-    //         });
-    //     },
-    // ],
+    vuetify: {
+        vuetifyOptions: {
+            theme: {
+                variations: {
+                    colors: ["primary"],
+                    lighten: 5,
+                    darken: 5,
+                },
+                defaultTheme: "myTheme",
+                themes: {
+                    myTheme: {
+                        dark: false,
+                        colors: {
+                            primary: "#3F51B5",
+                            outline: "#668290",
+                        },
+                    },
+                },
+            },
+        },
+    },
+    typescript: {
+        strict: true,
+    },
 });

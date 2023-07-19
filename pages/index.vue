@@ -1,4 +1,5 @@
 <template>
+    <TopBar class="mb-4" />
     <ListTitles />
 </template>
 

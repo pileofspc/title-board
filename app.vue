@@ -9,7 +9,12 @@
 <script setup lang="ts"></script>
 
 <style lang="scss">
-    // @use "~/assets/css/main.css";
+    @use "~/assets/styles/fonts";
+
+    body {
+        font-family: "Nunito", sans-serif;
+    }
+
     .maxw-xl {
         max-width: 1200px;
     }

@@ -20,5 +20,8 @@
     },
     "dependencies": {
         "vuetify": "^3.3.8"
+    },
+    "overrides": {
+        "vue": "latest"
     }
 }
