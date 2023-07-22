@@ -1,14 +1,25 @@
 <template>
-    <div class="chip-group">
-        <VChip
-            v-for="tag in props.tags"
-            variant="elevated"
-            closable
-            :color="tag.color"
-            class="chip-group__chip"
-        >
-            {{ tag.text }}
-        </VChip>
+    <div class="tag-group">
+        <TransitionGroup>
+            <VChip
+                v-for="tag in props.tags"
+                :key="tag.id"
+                variant="elevated"
+                :color="tag.color"
+                class="tag-group__tag"
+            >
+                {{ tag.text }}
+
+                <VBtn
+                    @click="() => emit('removeTag', tag)"
+                    variant="tonal"
+                    icon="mdi-close"
+                    density="compact"
+                    :loading="props.loading"
+                    class="tag-group__close-tag"
+                />
+            </VChip>
+        </TransitionGroup>
 
         <VMenu
             v-model="isMenuOpen"
@@ -19,38 +30,82 @@
             <template #activator="{ props: slotProps }">
                 <VChip
                     prepend-icon="mdi-plus"
+                    color="blue-grey"
                     v-bind="slotProps"
-                    :color="color"
                 >
                     Добавить тег
                 </VChip>
             </template>
 
-            <FormAddTag @close="isMenuOpen = false" />
+            <FormAddTag
+                :loading="props.loading"
+                @close="isMenuOpen = false"
+                @add-tag="onAddTag"
+            />
         </VMenu>
     </div>
 </template>
 
 <script setup lang="ts">
-    const color = useColor();
+    import type { VChip } from "vuetify/lib/components/index.mjs";
+
+    const emit = defineEmits<{
+        addTag: [Tag];
+        removeTag: [Tag];
+    }>();
+
+    const props = defineProps({
+        tags: {
+            type: Array as PropType<Tag[]>,
+            default: [],
+        },
+        loading: {
+            type: Boolean,
+        },
+        titleId: {
+            type: String,
+            required: true,
+        },
+    });
 
     const isMenuOpen = ref(false);
 
-    const props = defineProps({
-        tags: Array as PropType<Tag[]>,
+    function onAddTag(tag: Tag) {
+        emit("addTag", tag);
+    }
+    function closeMenu() {
+        isMenuOpen.value = false;
+    }
+
+    defineExpose({
+        closeMenu,
     });
 </script>
 
-<style lang="scss" scoped>
-    .chip-group {
+<style scoped lang="scss">
+    .tag-group {
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
 
-        &__chip {
+        &__tag {
             white-space: normal;
+            overflow-wrap: break-word;
             height: auto;
             min-height: 30px;
         }
+
+        &__close-tag {
+            transform: scale(0.7) translateX(8px);
+        }
+    }
+
+    .v-enter-active,
+    .v-leave-active {
+        transition: all 0.4s ease;
+    }
+    .v-enter-from,
+    .v-leave-to {
+        opacity: 0;
     }
 </style>

@@ -1,67 +1,68 @@
 <template>
-    <KeepAlive>
-        <VCard class="add-tag">
-            <VContainer>
-                <VForm @submit.prevent="onSubmit" v-model="valid">
-                    <div class="mb-2">Цвет</div>
-                    <VItemGroup
-                        selected-class="add-tag__selected"
-                        mandatory="force"
-                        class="add-tag__colors"
-                    >
-                        <template v-for="color in useColors().value">
-                            <VItem
-                                v-slot="{ selectedClass, select }"
-                                @group:selected="selectedColor = color"
-                            >
-                                <VBtn
-                                    density="compact"
-                                    :color="color"
-                                    @click="select"
-                                    :class="selectedClass"
-                                    class="add-tag__color"
-                                />
-                            </VItem>
-                        </template>
-                    </VItemGroup>
+    <VCard class="add-tag">
+        <VContainer>
+            <VForm @submit.prevent="" v-model="valid">
+                <div class="mb-2">Цвет</div>
+                <VItemGroup
+                    selected-class="add-tag__selected"
+                    mandatory="force"
+                    class="add-tag__colors"
+                >
+                    <template v-for="color in colors">
+                        <VItem
+                            v-slot="{ selectedClass, select }"
+                            @group:selected="selectedColor = color"
+                        >
+                            <VBtn
+                                density="compact"
+                                :color="color"
+                                @click="select"
+                                :class="selectedClass"
+                                class="add-tag__color"
+                            />
+                        </VItem>
+                    </template>
+                </VItemGroup>
 
-                    <div class="mt-4">Текст</div>
-                    <VTextField
-                        v-model="tagText"
-                        :rules="rules"
-                        :counter="max"
-                        density="compact"
-                    />
-                    <div class="add-tag__controls">
-                        <VBtn
-                            type="submit"
-                            color="blue-grey"
-                            class="mt-2"
-                            :loading="loading"
-                        >
-                            Добавить
-                        </VBtn>
-                        <VBtn
-                            variant="outlined"
-                            color="blue-grey"
-                            class="ml-2 mt-2"
-                            @click="emit('close')"
-                        >
-                            Закрыть
-                        </VBtn>
-                    </div>
-                </VForm>
-            </VContainer>
-        </VCard>
-    </KeepAlive>
+                <div class="mt-4">Текст</div>
+                <VTextField
+                    v-model="tagText"
+                    :rules="rules"
+                    :counter="max"
+                    density="compact"
+                />
+                <div class="add-tag__controls">
+                    <VBtn
+                        type="submit"
+                        color="blue-grey"
+                        class="mt-2"
+                        :loading="props.loading"
+                        @click="onAddTag"
+                    >
+                        Добавить
+                    </VBtn>
+                    <VBtn
+                        variant="outlined"
+                        color="blue-grey"
+                        class="ml-2 mt-2"
+                        @click="emit('close')"
+                    >
+                        Закрыть
+                    </VBtn>
+                </div>
+            </VForm>
+        </VContainer>
+    </VCard>
 </template>
 
 <script setup lang="ts">
-    const valid = ref(false);
-    const loading = ref(false);
+    import { v4 as uuidv4 } from "uuid";
 
+    const colors = useColors().value;
+
+    const valid = ref(false);
     const tagText = ref("");
-    const selectedColor = ref("");
+    const selectedColor = ref<Color>(colors[0]);
 
     const max = 150;
     const rules = [
@@ -75,27 +76,31 @@
         },
     ];
 
-    const emit = defineEmits(["close"]);
+    const props = defineProps({
+        loading: {
+            type: Boolean,
+        },
+    });
 
-    async function onSubmit() {
+    const emit = defineEmits<{
+        close: [];
+        addTag: [Tag];
+    }>();
+
+    function onAddTag() {
         if (!valid.value) {
             return;
         }
 
-        loading.value = true;
-
-        const tags = await new Promise((resolve) => {
-            setTimeout(() => {
-                resolve([{ color: "green", text: "green" }]);
-            }, 5000);
+        emit("addTag", {
+            id: uuidv4(),
+            color: selectedColor.value,
+            text: tagText.value,
         });
-
-        loading.value = false;
-        emit("close");
     }
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
     .add-tag {
         min-width: 300px;
 

@@ -15,7 +15,9 @@
                 </VBtn>
             </template>
 
-            <FormAddTag />
+            <VCard>
+                <VCardTitle>123</VCardTitle>
+            </VCard>
         </VDialog>
     </VContainer>
 </template>

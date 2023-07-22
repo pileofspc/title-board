@@ -7,7 +7,13 @@ export default defineNuxtConfig({
     //         autoprefixer: {},
     //     },
     // },
-    modules: ["@invictus.codes/nuxt-vuetify"],
+    modules: ["@invictus.codes/nuxt-vuetify", "@pinia/nuxt"],
+    pinia: {
+        autoImports: ["defineStore"],
+    },
+    imports: {
+        dirs: ["stores"],
+    },
     vuetify: {
         vuetifyOptions: {
             theme: {

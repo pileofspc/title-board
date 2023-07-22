@@ -1,8 +1,15 @@
 <template>
-    <VCard class="card" rounded="lg">
+    <VCard class="card" rounded="lg" :loading="titleLoading">
         <VCardItem>
             <div class="title-item__data">
-                <TagGroup :tags="tags" />
+                <TagGroup
+                    :tags="props.title.tags"
+                    :title-id="props.title.id"
+                    :loading="tagsLoading || titleLoading"
+                    ref="tagGroup"
+                    @add-tag="onAddTag"
+                    @remove-tag="onRemoveTag"
+                />
 
                 <div class="mt-3">
                     <VCardTitle>Атака титанов</VCardTitle>
@@ -23,9 +30,10 @@
                                 Просмотрено
                             </VChip>
                         </template>
-                        <KeepAlive>
-                            <FormAddTag />
-                        </KeepAlive>
+
+                        <VCard>
+                            <VCardTitle> 123 </VCardTitle>
+                        </VCard>
                     </VMenu>
                 </div>
 
@@ -36,6 +44,9 @@
                     size="30"
                     active-color="yellow-darken-3"
                     color="blue-grey"
+                    :disabled="titleLoading || ratingLoading"
+                    v-model="props.title.rating"
+                    @update:model-value="onRatingChange"
                 />
 
                 <div class="title-item__controls">
@@ -46,17 +57,18 @@
                                 icon="mdi-pencil"
                                 size="small"
                                 variant="tonal"
-                                :color="btnColor"
+                                color="blue-grey"
                             />
                         </template>
 
-                        <FormAddTag />
+                        <FormAddTag :id="props.title.id" />
                     </VDialog>
 
                     <VMenu
                         :close-on-content-click="false"
                         location="top right"
                         offset="8"
+                        v-model="isRemoveTitleMenuOpen"
                     >
                         <template #activator="{ props: slotProps }">
                             <VBtn
@@ -65,15 +77,20 @@
                                 size="small"
                                 variant="tonal"
                                 class="ml-2"
-                                :color="btnColor"
+                                color="blue-grey"
                             />
                         </template>
+
                         <VCard class="pa-3">
                             <div class="mb-2">Вы уверены?</div>
                             <VBtn
                                 variant="tonal"
                                 color="blue-grey"
                                 prepend-icon="mdi-check-circle-outline"
+                                :loading="
+                                    titleLoading || tagsLoading || ratingLoading
+                                "
+                                @click="onRemoveTitle"
                             >
                                 Да
                             </VBtn>
@@ -82,6 +99,7 @@
                                 color="blue-grey"
                                 class="ml-2"
                                 prepend-icon="mdi-close-circle-outline"
+                                @click="isRemoveTitleMenuOpen = false"
                             >
                                 Нет
                             </VBtn>
@@ -96,58 +114,49 @@
 </template>
 
 <script setup lang="ts">
-    const btnColor = useColor();
+    import type { TagGroup } from ".nuxt/components";
 
-    const tags = ref<Tag[]>([
-        {
-            color: "red",
-            text: "Пользовательский тег 1",
+    const props = defineProps({
+        title: {
+            type: Object as PropType<Title>,
+            required: true,
         },
-        {
-            color: "green",
-            text: "Тег2",
-        },
-        {
-            color: "blue",
-            text: "Тег3",
-        },
-        {
-            color: "amber",
-            text: "Тег4",
-        },
-    ]);
+    });
 
-    function setTags(newTags: Tag[]) {
-        tags.value = newTags;
+    const titlesStore = useTitlesStore();
+
+    const isRemoveTitleMenuOpen = ref(false);
+    const tagsLoading = ref(false);
+    const ratingLoading = ref(false);
+    const titleLoading = ref(false);
+
+    const tagGroup = ref<InstanceType<typeof TagGroup> | null>(null);
+    async function onAddTag(tag: Tag) {
+        tagsLoading.value = true;
+        await titlesStore.addTag(props.title.id, tag);
+        tagGroup.value?.closeMenu();
+        tagsLoading.value = false;
     }
-    // const props = defineProps({
-    //     btnColor: {
-    //         type: String,
-    //     },
-    // });
+    async function onRemoveTag(tag: Tag) {
+        tagsLoading.value = true;
+        await titlesStore.removeTag(props.title.id, tag);
+        tagsLoading.value = false;
+    }
 
-    // const props = defineProps({
-    //     itemName: {
-    //         type: String,
-    //         required: true,
-    //     },
-    //     img: {
-    //         type: String,
-    //         required: true,
-    //     },
-    //     length: {
-    //         type: Number,
-    //     },
-    //     tags: {
-    //         type: Array,
-    //     },
-    //     statusTag: {
-    //         type: String,
-    //     },
-    //     rating: {
-    //         type: Number,
-    //     },
-    // });
+    async function onRemoveTitle() {
+        titleLoading.value = true;
+        await titlesStore.removeTitle(props.title.id);
+        titleLoading.value = false;
+        isRemoveTitleMenuOpen.value = false;
+    }
+
+    async function onRatingChange(rating: string | number) {
+        rating = typeof rating === "string" ? parseInt(rating) : rating;
+
+        ratingLoading.value = true;
+        await titlesStore.rateTitle(props.title.id, rating);
+        ratingLoading.value = false;
+    }
 </script>
 
 <style scoped lang="scss">
