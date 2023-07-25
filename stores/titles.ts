@@ -1,8 +1,11 @@
+import { json } from "stream/consumers";
+
 export const useTitlesStore = defineStore("titles", () => {
     const titlesState: Ref<Title[]> = ref([]);
     let mockJson: Title[] = [
         {
             id: "1",
+            status: "WATCHED",
             rating: 0,
             tags: [
                 {
@@ -24,6 +27,7 @@ export const useTitlesStore = defineStore("titles", () => {
         },
         {
             id: "2",
+            status: "WANT_TO_WATCH",
             rating: 5,
             tags: [
                 {
@@ -40,6 +44,7 @@ export const useTitlesStore = defineStore("titles", () => {
         },
         {
             id: "3",
+            status: "NOT_WATCHED",
             rating: 2,
             tags: [
                 {
@@ -61,6 +66,7 @@ export const useTitlesStore = defineStore("titles", () => {
         },
         {
             id: "4",
+            status: "NOT_WATCHED",
             rating: 8,
             tags: [
                 {
@@ -87,19 +93,15 @@ export const useTitlesStore = defineStore("titles", () => {
         return mockJson.find((item) => item.id === titleId);
     }
 
-    // function getTitle(titleId: string) {
-    //     const foundTitle = findTitle(titleId);
-
-    //     if (foundTitle) {
-    //         return computed(() => foundTitle);
-    //     }
-    // }
+    function getTitlesCopy() {
+        return JSON.parse(JSON.stringify(mockJson));
+    }
 
     async function removeTitle(titleId: string) {
         return new Promise((resolve) => {
             setTimeout(() => {
                 mockJson = mockJson.filter((title) => title.id !== titleId);
-                titlesState.value = mockJson;
+                titlesState.value = getTitlesCopy();
                 resolve(null);
             }, 2000);
         });
@@ -113,7 +115,7 @@ export const useTitlesStore = defineStore("titles", () => {
                     foundTitle.rating = rating;
                 }
 
-                titlesState.value = mockJson;
+                titlesState.value = getTitlesCopy();
                 resolve(null);
             }, 2000);
         });
@@ -122,10 +124,24 @@ export const useTitlesStore = defineStore("titles", () => {
     async function fetchTitles() {
         return new Promise((resolve) => {
             setTimeout(() => {
-                titlesState.value = mockJson;
+                titlesState.value = getTitlesCopy();
                 resolve(null);
             }, 2000);
         });
+    }
+
+    async function addTag(titleId: string, tag: Tag) {
+        const foundTitle = findTitle(titleId);
+
+        if (foundTitle) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    foundTitle.tags.push(tag);
+                    titlesState.value = getTitlesCopy();
+                    resolve(null);
+                }, 3000);
+            });
+        }
     }
 
     async function removeTag(titleId: string, tag: Tag) {
@@ -137,19 +153,21 @@ export const useTitlesStore = defineStore("titles", () => {
                     foundTitle.tags = foundTitle.tags.filter(
                         (item) => item.id !== tag.id
                     );
+                    titlesState.value = getTitlesCopy();
                     resolve(null);
                 }, 3000);
             });
         }
     }
 
-    async function addTag(titleId: string, tag: Tag) {
+    async function changeStatus(titleId: string, status: TitleStatus) {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
             return new Promise((resolve) => {
                 setTimeout(() => {
-                    foundTitle.tags.push(tag);
+                    foundTitle.status = status;
+                    titlesState.value = getTitlesCopy();
                     resolve(null);
                 }, 3000);
             });
@@ -163,5 +181,6 @@ export const useTitlesStore = defineStore("titles", () => {
         rateTitle,
         removeTag,
         addTag,
+        changeStatus,
     };
 });

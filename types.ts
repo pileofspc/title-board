@@ -7,6 +7,7 @@
 // type Color = "red" | "green" | "blue" | "amber" | "indigo";
 
 declare type Color = import("~/stores/colors").Color;
+declare type TitleStatus = import("~/stores/statuses").Status;
 
 interface Tag {
     id: string;
@@ -18,7 +19,7 @@ interface Title {
     id: string;
     // name: string;
     // description: string;
-    // status: "watched" | "not-watched";
+    status: TitleStatus;
     rating: number;
     // img: string;
     // link: string;

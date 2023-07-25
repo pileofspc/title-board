@@ -11,12 +11,13 @@
                 {{ tag.text }}
 
                 <VBtn
-                    @click="() => emit('removeTag', tag)"
+                    class="tag-group__close-tag"
                     variant="tonal"
                     icon="mdi-close"
                     density="compact"
                     :loading="props.loading"
-                    class="tag-group__close-tag"
+                    :disabled="props.disabled"
+                    @click="() => emit('removeTag', tag)"
                 />
             </VChip>
         </TransitionGroup>
@@ -39,6 +40,7 @@
 
             <FormAddTag
                 :loading="props.loading"
+                :disabled="props.disabled"
                 @close="isMenuOpen = false"
                 @add-tag="onAddTag"
             />
@@ -50,8 +52,8 @@
     import type { VChip } from "vuetify/lib/components/index.mjs";
 
     const emit = defineEmits<{
-        addTag: [Tag];
-        removeTag: [Tag];
+        addTag: [tag: Tag, closeMenuFn: () => void];
+        removeTag: [tag: Tag];
     }>();
 
     const props = defineProps({
@@ -62,24 +64,19 @@
         loading: {
             type: Boolean,
         },
-        titleId: {
-            type: String,
-            required: true,
+        disabled: {
+            type: Boolean,
         },
     });
 
     const isMenuOpen = ref(false);
 
     function onAddTag(tag: Tag) {
-        emit("addTag", tag);
+        emit("addTag", tag, closeMenu);
     }
     function closeMenu() {
         isMenuOpen.value = false;
     }
-
-    defineExpose({
-        closeMenu,
-    });
 </script>
 
 <style scoped lang="scss">

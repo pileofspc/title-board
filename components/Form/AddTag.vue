@@ -37,6 +37,7 @@
                         color="blue-grey"
                         class="mt-2"
                         :loading="props.loading"
+                        :disabled="props.disabled"
                         @click="onAddTag"
                     >
                         Добавить
@@ -78,6 +79,9 @@
 
     const props = defineProps({
         loading: {
+            type: Boolean,
+        },
+        disabled: {
             type: Boolean,
         },
     });
