@@ -15,7 +15,7 @@
         font-family: "Nunito", sans-serif;
     }
 
-    .maxw-xl {
+    ._container {
         max-width: 1200px;
     }
 </style>

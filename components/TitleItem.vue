@@ -11,21 +11,27 @@
                 />
 
                 <div class="mt-3">
-                    <VCardTitle>Атака титанов</VCardTitle>
-                    <VCardSubtitle style="white-space: normal">
-                        Сёнэн, темное фэнтези, драма, 12 серий, Сёнэн, темное
-                        фэнтези, драма, 12 серий, Сёнэн, темное фэнтези, драма,
-                        12 серий
-                    </VCardSubtitle>
+                    <TitleName
+                        :text="props.title.name"
+                        :loading="titleLoading || titleNameLoading"
+                        @change-name="onTitleNameChange"
+                        variant="title"
+                    />
+                    <TitleDescription
+                        :text="props.title.description"
+                        :loading="titleLoading || titleNameLoading"
+                        @change-name="onTitleDescriptionChange"
+                        variant="subtitle"
+                    />
                 </div>
 
                 <div class="mt-3">
                     <VMenu location="bottom start" offset="8">
                         <template #activator="{ props: slotProps }">
                             <VChip
+                                v-bind="slotProps"
                                 :disabled="statusLoading"
                                 :color="statuses[props.title.status].color"
-                                v-bind="slotProps"
                             >
                                 {{ statuses[props.title.status].display }}
                             </VChip>
@@ -36,19 +42,19 @@
                 </div>
 
                 <VRating
-                    class="mt-3"
+                    :disabled="titleLoading || ratingLoading"
+                    v-model="props.title.rating"
+                    @update:model-value="onRatingChange"
                     hover
                     half-increments
                     size="30"
                     active-color="yellow-darken-3"
                     color="blue-grey"
-                    :disabled="titleLoading || ratingLoading"
-                    v-model="props.title.rating"
-                    @update:model-value="onRatingChange"
+                    class="mt-3"
                 />
 
                 <div class="title-item__controls">
-                    <VDialog>
+                    <!-- <VDialog>
                         <template #activator="{ props: slotProps }">
                             <VBtn
                                 v-bind="slotProps"
@@ -60,12 +66,12 @@
                         </template>
 
                         <FormAddTag :id="props.title.id" />
-                    </VDialog>
+                    </VDialog> -->
 
                     <VMenu
-                        :close-on-content-click="false"
                         location="top right"
                         offset="8"
+                        :close-on-content-click="false"
                         v-model="isMenuOpen"
                     >
                         <template #activator="{ props: slotProps }">
@@ -74,8 +80,8 @@
                                 icon="mdi-delete"
                                 size="small"
                                 variant="tonal"
-                                class="ml-2"
                                 color="blue-grey"
+                                class="ml-2"
                             />
                         </template>
 
@@ -105,15 +111,16 @@
     const statuses = useStatuses();
 
     const isMenuOpen = ref(false);
+    const titleNameLoading = ref(false);
     const tagsLoading = ref(false);
     const ratingLoading = ref(false);
     const titleLoading = ref(false);
     const statusLoading = ref(false);
 
-    async function onAddTag(tag: Tag, closeMenuFn: () => void) {
+    async function onAddTag(tag: Tag, closeFn: () => void) {
         tagsLoading.value = true;
         await titlesStore.addTag(props.title.id, tag);
-        closeMenuFn();
+        closeFn();
         tagsLoading.value = false;
     }
     async function onRemoveTag(tag: Tag) {
@@ -137,6 +144,21 @@
         statusLoading.value = true;
         await titlesStore.changeStatus(props.title.id, status);
         statusLoading.value = false;
+    }
+    async function onTitleNameChange(name: string, closeFn: () => void) {
+        titleNameLoading.value = true;
+        await titlesStore.changeTitleName(props.title.id, name);
+        closeFn();
+        titleNameLoading.value = false;
+    }
+    async function onTitleDescriptionChange(
+        description: string,
+        closeFn: () => void
+    ) {
+        titleNameLoading.value = true;
+        await titlesStore.changeTitleDescription(props.title.id, description);
+        closeFn();
+        titleNameLoading.value = false;
     }
 </script>
 

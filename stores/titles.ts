@@ -5,6 +5,8 @@ export const useTitlesStore = defineStore("titles", () => {
     let mockJson: Title[] = [
         {
             id: "1",
+            name: "Атака титанов",
+            description: "Ну аниме и аниме",
             status: "WATCHED",
             rating: 0,
             tags: [
@@ -27,6 +29,8 @@ export const useTitlesStore = defineStore("titles", () => {
         },
         {
             id: "2",
+            name: "Тетрадь смерти",
+            description: "Аниме ну и аниме",
             status: "WANT_TO_WATCH",
             rating: 5,
             tags: [
@@ -44,6 +48,8 @@ export const useTitlesStore = defineStore("titles", () => {
         },
         {
             id: "3",
+            name: "Человек-бензопила",
+            description: "И аниме ну аниме",
             status: "NOT_WATCHED",
             rating: 2,
             tags: [
@@ -66,6 +72,8 @@ export const useTitlesStore = defineStore("titles", () => {
         },
         {
             id: "4",
+            name: "Дороро",
+            description: "Аниме аниме ну и",
             status: "NOT_WATCHED",
             rating: 8,
             tags: [
@@ -174,6 +182,37 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
+    async function changeTitleName(titleId: string, name: string) {
+        const foundTitle = findTitle(titleId);
+
+        if (foundTitle) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    foundTitle.name = name;
+                    titlesState.value = getTitlesCopy();
+                    resolve(null);
+                }, 2000);
+            });
+        }
+    }
+
+    async function changeTitleDescription(
+        titleId: string,
+        description: string
+    ) {
+        const foundTitle = findTitle(titleId);
+
+        if (foundTitle) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    foundTitle.description = description;
+                    titlesState.value = getTitlesCopy();
+                    resolve(null);
+                }, 2000);
+            });
+        }
+    }
+
     return {
         titles,
         fetchTitles,
@@ -182,5 +221,7 @@ export const useTitlesStore = defineStore("titles", () => {
         removeTag,
         addTag,
         changeStatus,
+        changeTitleName,
+        changeTitleDescription,
     };
 });

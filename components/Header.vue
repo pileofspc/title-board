@@ -1,6 +1,6 @@
 <template>
     <VAppBar>
-        <VContainer class="d-flex maxw-xl align-center" fluid>
+        <VContainer class="d-flex _container align-center" fluid>
             <VBtn v-for="link in links" :text="link" color="blue-grey" />
             <VAvatar color="grey-darken-1" size="48" class="ml-auto" />
         </VContainer>
