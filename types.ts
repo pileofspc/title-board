@@ -8,20 +8,29 @@
 declare type Color = import("~/stores/colors").Color;
 declare type TitleStatus = import("~/stores/statuses").Status;
 
-interface Tag {
-    id: string;
+type Tag = {
+    id?: string;
     color: Color;
     text: string;
-}
+};
 
-interface Title {
+type Poster = {
+    img?: string;
+    link?: string;
+};
+
+type PosterBlob = {
+    img?: string;
+    link?: string;
+    imgBlob?: File;
+};
+
+type Title = {
     id: string;
     name: string;
     description: string;
     status: TitleStatus;
     rating: number;
-    // img: string;
-    // link: string;
-
+    poster?: Poster;
     tags: Tag[];
-}
+};

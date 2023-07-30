@@ -1,4 +1,4 @@
-import { Directive } from "nuxt/dist/app/compat/capi";
+import type { Directive } from "nuxt/dist/app/compat/capi";
 
 let listeners: Map<HTMLElement, EventListener> = new Map();
 

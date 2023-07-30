@@ -1,4 +1,4 @@
-import { json } from "stream/consumers";
+import { v4 as uuidv4 } from "uuid";
 
 export const useTitlesStore = defineStore("titles", () => {
     const titlesState: Ref<Title[]> = ref([]);
@@ -139,6 +139,8 @@ export const useTitlesStore = defineStore("titles", () => {
     }
 
     async function addTag(titleId: string, tag: Tag) {
+        // uuid временно пока нет фетчинга
+        tag.id = uuidv4();
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
@@ -168,7 +170,7 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
-    async function changeStatus(titleId: string, status: TitleStatus) {
+    async function changeTitleStatus(titleId: string, status: TitleStatus) {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
@@ -213,6 +215,20 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
+    async function changeTitlePoster(titleId: string, poster: Poster) {
+        const foundTitle = findTitle(titleId);
+
+        if (foundTitle) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    foundTitle.poster = poster;
+                    titlesState.value = getTitlesCopy();
+                    resolve(null);
+                }, 2000);
+            });
+        }
+    }
+
     return {
         titles,
         fetchTitles,
@@ -220,8 +236,9 @@ export const useTitlesStore = defineStore("titles", () => {
         rateTitle,
         removeTag,
         addTag,
-        changeStatus,
+        changeTitleStatus,
         changeTitleName,
         changeTitleDescription,
+        changeTitlePoster,
     };
 });

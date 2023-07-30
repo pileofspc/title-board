@@ -35,6 +35,7 @@
 
     .v-leave-active {
         // TODO: Придумать как сделать без назначения ширины
+        // https://jsfiddle.net/soxv3vr0/
         position: absolute;
         width: 1168px;
     }

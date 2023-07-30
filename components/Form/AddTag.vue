@@ -1,7 +1,7 @@
 <template>
     <VCard class="add-tag">
         <VContainer>
-            <VForm @submit.prevent="" v-model="valid">
+            <VForm @submit.prevent v-model="valid">
                 <div class="mb-2">Цвет</div>
                 <VItemGroup
                     selected-class="add-tag__selected"
@@ -14,9 +14,9 @@
                             @group:selected="selectedColor = color"
                         >
                             <VBtn
+                                @click="select"
                                 density="compact"
                                 :color="color"
-                                @click="select"
                                 :class="selectedClass"
                                 class="add-tag__color"
                             />
@@ -27,56 +27,41 @@
                 <div class="mt-4">Текст</div>
                 <VTextField
                     v-model="tagText"
+                    clearable
+                    @click:clear="tagText = ''"
+                    :maxlength="max"
                     :rules="rules"
-                    :counter="max"
+                    counter
                     density="compact"
                 />
-                <div class="add-tag__controls">
+
+                <VCardActions class="justify-end">
                     <VBtn
                         type="submit"
-                        color="blue-grey"
-                        class="mt-2"
                         :loading="props.loading"
                         :disabled="props.disabled"
                         @click="onAddTag"
+                        variant="elevated"
+                        color="blue-grey"
+                        class="mt-2"
                     >
                         Добавить
                     </VBtn>
                     <VBtn
+                        @click="emit('close')"
                         variant="outlined"
                         color="blue-grey"
                         class="ml-2 mt-2"
-                        @click="emit('close')"
                     >
                         Закрыть
                     </VBtn>
-                </div>
+                </VCardActions>
             </VForm>
         </VContainer>
     </VCard>
 </template>
 
 <script setup lang="ts">
-    import { v4 as uuidv4 } from "uuid";
-
-    const colors = useColors().value;
-
-    const valid = ref(false);
-    const tagText = ref("");
-    const selectedColor = ref<Color>(colors[0]);
-
-    const max = 150;
-    const rules = [
-        (value: string) => {
-            if (value) return true;
-            return "Обязательно для заполнения";
-        },
-        (value: string) => {
-            if (value?.length <= max) return true;
-            return `Не более ${max} знаков`;
-        },
-    ];
-
     const props = defineProps({
         loading: {
             type: Boolean,
@@ -85,11 +70,21 @@
             type: Boolean,
         },
     });
-
     const emit = defineEmits<{
         close: [];
         addTag: [Tag];
     }>();
+    const colors = useColors().value;
+
+    const valid = ref(false);
+    const tagText = ref("");
+    const selectedColor = ref<Color>(colors[0]);
+    const max = 50;
+    const rules = [
+        (value: string) => {
+            return value?.length > 0 || "Обязательно для заполнения";
+        },
+    ];
 
     function onAddTag() {
         if (!valid.value) {
@@ -97,7 +92,6 @@
         }
 
         emit("addTag", {
-            id: uuidv4(),
             color: selectedColor.value,
             text: tagText.value,
         });

@@ -94,18 +94,20 @@
                 </div>
             </div>
 
-            <Poster class="title-item__poster" />
+            <TitlePoster
+                :poster="props.title.poster"
+                :loading="posterLoading"
+                @edit-poster="onEditPoster"
+                class="title-item__poster"
+            />
         </VCardItem>
     </VCard>
 </template>
 
 <script setup lang="ts">
-    const props = defineProps({
-        title: {
-            type: Object as PropType<Title>,
-            required: true,
-        },
-    });
+    const props = defineProps<{
+        title: Title;
+    }>();
 
     const titlesStore = useTitlesStore();
     const statuses = useStatuses();
@@ -116,6 +118,7 @@
     const ratingLoading = ref(false);
     const titleLoading = ref(false);
     const statusLoading = ref(false);
+    const posterLoading = ref(false);
 
     async function onAddTag(tag: Tag, closeFn: () => void) {
         tagsLoading.value = true;
@@ -142,7 +145,7 @@
     }
     async function onStatusSelected(status: TitleStatus) {
         statusLoading.value = true;
-        await titlesStore.changeStatus(props.title.id, status);
+        await titlesStore.changeTitleStatus(props.title.id, status);
         statusLoading.value = false;
     }
     async function onTitleNameChange(name: string, closeFn: () => void) {
@@ -159,6 +162,12 @@
         await titlesStore.changeTitleDescription(props.title.id, description);
         closeFn();
         titleNameLoading.value = false;
+    }
+    async function onEditPoster(poster: Poster, closeFn: () => void) {
+        posterLoading.value = true;
+        await titlesStore.changeTitlePoster(props.title.id, poster);
+        closeFn();
+        posterLoading.value = false;
     }
 </script>
 
