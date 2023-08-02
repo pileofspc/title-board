@@ -14,15 +14,20 @@ type Tag = {
     text: string;
 };
 
-type Poster = {
+type Position = {
+    x: number;
+    y: number;
+};
+
+type TitlePoster = {
     img?: string;
     link?: string;
 };
 
-type PosterBlob = {
+type TitlePosterBlob = {
     img?: string;
-    link?: string;
     imgBlob?: File;
+    link?: string;
 };
 
 type Title = {
@@ -31,6 +36,6 @@ type Title = {
     description: string;
     status: TitleStatus;
     rating: number;
-    poster?: Poster;
+    poster?: TitlePoster;
     tags: Tag[];
 };

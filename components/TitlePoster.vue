@@ -1,7 +1,7 @@
 <template>
     <div class="title-poster">
         <a :href="props.poster?.link">
-            <Poster :img="props.poster?.img" class="title-poster__poster" />
+            <Poster :src="props.poster?.img" class="title-poster__poster" />
         </a>
 
         <VDialog v-model="isMenuOpen" max-width="800">
@@ -27,10 +27,10 @@
 <script setup lang="ts">
     const props = defineProps<{
         loading?: boolean;
-        poster?: Poster;
+        poster?: TitlePoster;
     }>();
     const emit = defineEmits<{
-        editPoster: [poster: Poster, closeFn: () => void];
+        editPoster: [poster: TitlePoster, closeFn: () => void];
     }>();
 
     const isMenuOpen = ref(false);
@@ -39,7 +39,7 @@
         isMenuOpen.value = false;
     }
 
-    function onEditPoster(poster: Poster) {
+    function onEditPoster(poster: TitlePoster) {
         emit("editPoster", poster, close);
     }
 </script>

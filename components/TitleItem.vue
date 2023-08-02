@@ -163,7 +163,7 @@
         closeFn();
         titleNameLoading.value = false;
     }
-    async function onEditPoster(poster: Poster, closeFn: () => void) {
+    async function onEditPoster(poster: TitlePoster, closeFn: () => void) {
         posterLoading.value = true;
         await titlesStore.changeTitlePoster(props.title.id, poster);
         closeFn();

@@ -215,7 +215,7 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
-    async function changeTitlePoster(titleId: string, poster: Poster) {
+    async function changeTitlePoster(titleId: string, poster: TitlePoster) {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {

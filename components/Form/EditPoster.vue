@@ -43,6 +43,12 @@
                     />
                 </div>
 
+                <PosterPosition
+                    v-model="posterPos"
+                    :src="fileURL || imgLink || props.poster?.img"
+                    class="edit-poster__poster mt-6"
+                />
+
                 <VCardActions class="justify-end">
                     <VBtn
                         type="submit"
@@ -72,11 +78,11 @@
 
     const props = defineProps<{
         loading?: boolean;
-        poster?: Poster;
+        poster?: TitlePoster;
     }>();
     const emit = defineEmits<{
         close: [];
-        editPoster: [poster: Poster];
+        editPoster: [poster: TitlePoster];
     }>();
 
     const states = {
@@ -90,6 +96,11 @@
     const imgLink = ref(props.poster?.img || "");
     const files = shallowRef<File[]>([]);
     const file = computed(() => files.value?.[0]);
+    const fileURL = computed(() => {
+        return !imgLink.value && file.value
+            ? URL.createObjectURL(file.value)
+            : null;
+    });
 
     const state = computed(() => {
         if (imgLink.value?.length > 0) {
@@ -117,16 +128,9 @@
             !value?.[0] ||
             value[0].size < 50000000 ||
             "Размер файла не должен превышать 50 МБ",
-        // oneOf: (value: unknown) =>
-        //     !!imgLink.value ||
-        //     !!file.value ||
-        //     "Должна быть введена ссылка или выбрано локальное изображение",
     };
 
     const formElement = ref<InstanceType<typeof VForm> | null>(null);
-    // watch([imgLink, file], () => {
-    //     formElement.value?.validate();
-    // });
 
     function prefix(link: string) {
         const prefix = "https://";
@@ -138,12 +142,17 @@
             return;
         }
 
-        const poster: PosterBlob = {};
+        const poster: TitlePosterBlob = {};
         extLink.value?.length > 0 && (poster.link = prefix(extLink.value));
         imgLink.value?.length > 0 && (poster.img = prefix(imgLink.value));
         file.value && (poster.imgBlob = file.value);
         emit("editPoster", poster);
     }
+
+    const posterPos = ref<Position>({
+        x: 50,
+        y: 50,
+    });
 </script>
 
 <style scoped lang="scss">
@@ -152,6 +161,10 @@
 
         &__image {
             border: 1px solid grey;
+        }
+
+        &__poster {
+            max-width: 584px;
         }
     }
 </style>
