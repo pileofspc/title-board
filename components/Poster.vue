@@ -18,7 +18,7 @@
                 <img
                     :src="Missing"
                     alt="Изображение недоступно"
-                    class="poster__image"
+                    class="poster__error"
                 />
             </template>
         </VImg>
@@ -66,8 +66,10 @@
             height: 100%;
         }
 
-        &__image {
+        &__error {
             width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
     }
 </style>

@@ -2,7 +2,7 @@
     <VCard class="edit-poster">
         <VCardTitle>Редактирование постера</VCardTitle>
         <VContainer>
-            <VForm ref="formElement" @submit.prevent="onSubmit" v-model="valid">
+            <VForm @submit.prevent="onSubmit" v-model="isMainValid">
                 <VTextField
                     v-model="extLink"
                     clearable
@@ -14,27 +14,33 @@
                 />
 
                 <div class="edit-poster__image px-4 pt-5 rounded-lg">
-                    <VTextField
-                        v-model="imgLink"
-                        clearable
-                        :disabled="
-                            !(state === states.link || state === states.initial)
-                        "
-                        @click:clear="imgLink = ''"
-                        :rules="[rules.link]"
-                        label="Ссылка на изображение постера"
-                        prepend-icon="mdi-image"
-                        density="compact"
-                    />
+                    <VForm v-model="isImgLinkValid">
+                        <VTextField
+                            v-model="imgLink"
+                            :disabled="isImgLinkDisabled"
+                            clearable
+                            @click:clear="imgLink = ''"
+                            :append-inner-icon="
+                                props.poster?.img &&
+                                props.poster?.img !== imgLink
+                                    ? 'mdi-undo'
+                                    : null
+                            "
+                            @click:append-inner="
+                                imgLink = props.poster?.img || ''
+                            "
+                            :rules="[rules.link]"
+                            label="Ссылка на изображение постера"
+                            prepend-icon="mdi-image"
+                            density="compact"
+                        />
+                    </VForm>
 
                     <div class="mb-4">ИЛИ</div>
 
                     <VFileInput
                         v-model="files"
                         clearable
-                        :disabled="
-                            !(state === states.file || state === states.initial)
-                        "
                         accept="image/*"
                         label="Загрузите изображение"
                         show-size
@@ -44,8 +50,9 @@
                 </div>
 
                 <PosterPosition
-                    v-model="posterPos"
-                    :src="fileURL || imgLink || props.poster?.img"
+                    :position="posterPos"
+                    @update-position="updatePos"
+                    :src="previewSrc"
                     class="edit-poster__poster mt-6"
                 />
 
@@ -74,8 +81,6 @@
 </template>
 
 <script setup lang="ts">
-    import type { VForm } from "vuetify/lib/components/index.mjs";
-
     const props = defineProps<{
         loading?: boolean;
         poster?: TitlePoster;
@@ -85,31 +90,33 @@
         editPoster: [poster: TitlePoster];
     }>();
 
-    const states = {
-        link: "LINK",
-        file: "FILE",
-        initial: "INITIAL",
-    } as const;
-
-    const valid = ref(false);
-    const extLink = ref(props.poster?.link || "");
     const imgLink = ref(props.poster?.img || "");
-    const files = shallowRef<File[]>([]);
-    const file = computed(() => files.value?.[0]);
-    const fileURL = computed(() => {
-        return !imgLink.value && file.value
-            ? URL.createObjectURL(file.value)
-            : null;
-    });
+    const isImgLinkValid = ref(false);
+    const isImgLinkDisabled = computed(() => !!file.value);
 
-    const state = computed(() => {
-        if (imgLink.value?.length > 0) {
-            return states.link;
+    const extLink = ref(props.poster?.link || "");
+    const files = shallowRef<File[]>([]);
+    const file = computed(() => files.value[0]);
+    const fileURL = ref("");
+    watch(file, (val) => {
+        URL.revokeObjectURL(fileURL.value);
+        if (val) {
+            fileURL.value = URL.createObjectURL(val);
+        } else {
+            fileURL.value = "";
         }
-        if (file.value) {
-            return states.file;
-        }
-        return states.initial;
+    });
+    const posterPos = ref<Position>(
+        props.poster?.position ? { ...props.poster.position } : { x: 50, y: 50 }
+    );
+    function updatePos(x: number, y: number) {
+        posterPos.value.x = x;
+        posterPos.value.y = y;
+    }
+
+    const isMainValid = ref(false);
+    const isEverythingValid = computed(() => {
+        return isMainValid.value && isImgLinkValid.value;
     });
 
     const regexp =
@@ -130,28 +137,42 @@
             "Размер файла не должен превышать 50 МБ",
     };
 
-    const formElement = ref<InstanceType<typeof VForm> | null>(null);
-
+    // helper
     function prefix(link: string) {
         const prefix = "https://";
         return link.startsWith(prefix) ? link : prefix.concat(link);
     }
 
-    function onSubmit() {
-        if (!formElement.value?.isValid) {
+    async function onSubmit() {
+        if (!isEverythingValid.value) {
             return;
         }
 
         const poster: TitlePosterBlob = {};
-        extLink.value?.length > 0 && (poster.link = prefix(extLink.value));
-        imgLink.value?.length > 0 && (poster.img = prefix(imgLink.value));
-        file.value && (poster.imgBlob = file.value);
+        if (extLink.value?.length > 0) {
+            poster.link = prefix(extLink.value);
+        }
+        if (imgLink.value?.length > 0 && !file.value) {
+            poster.img = prefix(imgLink.value);
+        } else {
+            poster.imgFileBase64 = await blobToBase64(file.value);
+        }
         emit("editPoster", poster);
     }
 
-    const posterPos = ref<Position>({
-        x: 50,
-        y: 50,
+    const validatedImgLinkSrc = ref(props.poster?.img || "");
+    watch(
+        imgLink,
+        timeout(() => {
+            if (isImgLinkValid.value) {
+                validatedImgLinkSrc.value = prefix(imgLink.value);
+            } else {
+                validatedImgLinkSrc.value = "";
+            }
+        }, 400)
+    );
+    const previewSrc = computed(() => {
+        return fileURL.value || validatedImgLinkSrc.value;
     });
 </script>
 

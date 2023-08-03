@@ -9,6 +9,9 @@ export const useTitlesStore = defineStore("titles", () => {
             description: "Ну аниме и аниме",
             status: "WATCHED",
             rating: 0,
+            poster: {
+                img: "https://upload.wikimedia.org/wikipedia/ru/thumb/8/8d/Shingeki_no_Kyojin_-_%D0%BF%D0%B5%D1%80%D1%81%D0%BE%D0%BD%D0%B0%D0%B6%D0%B8.jpg/600px-Shingeki_no_Kyojin_-_%D0%BF%D0%B5%D1%80%D1%81%D0%BE%D0%BD%D0%B0%D0%B6%D0%B8.jpg",
+            },
             tags: [
                 {
                     id: "t1",
@@ -215,7 +218,10 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
-    async function changeTitlePoster(titleId: string, poster: TitlePoster) {
+    async function changeTitlePoster(
+        titleId: string,
+        poster: TitlePoster | TitlePosterBlob
+    ) {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
@@ -223,6 +229,7 @@ export const useTitlesStore = defineStore("titles", () => {
                 setTimeout(() => {
                     foundTitle.poster = poster;
                     titlesState.value = getTitlesCopy();
+                    console.log(titlesState.value);
                     resolve(null);
                 }, 2000);
             });

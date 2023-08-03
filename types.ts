@@ -22,12 +22,14 @@ type Position = {
 type TitlePoster = {
     img?: string;
     link?: string;
+    position?: Position;
 };
 
 type TitlePosterBlob = {
     img?: string;
-    imgBlob?: File;
+    imgFileBase64?: string;
     link?: string;
+    position?: Position;
 };
 
 type Title = {
