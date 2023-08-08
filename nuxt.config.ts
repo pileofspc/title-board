@@ -34,6 +34,9 @@ export default defineNuxtConfig({
                 },
             },
         },
+        moduleOptions: {
+            useIconCDN: false,
+        },
     },
     typescript: {
         strict: true,

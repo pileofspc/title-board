@@ -10,7 +10,11 @@ export const useTitlesStore = defineStore("titles", () => {
             status: "WATCHED",
             rating: 0,
             poster: {
-                img: "https://upload.wikimedia.org/wikipedia/ru/thumb/8/8d/Shingeki_no_Kyojin_-_%D0%BF%D0%B5%D1%80%D1%81%D0%BE%D0%BD%D0%B0%D0%B6%D0%B8.jpg/600px-Shingeki_no_Kyojin_-_%D0%BF%D0%B5%D1%80%D1%81%D0%BE%D0%BD%D0%B0%D0%B6%D0%B8.jpg",
+                img: "https://www.kino-teatr.ru/news/23181/205114.jpg",
+                position: {
+                    x: 50,
+                    y: 100,
+                },
             },
             tags: [
                 {
@@ -109,17 +113,17 @@ export const useTitlesStore = defineStore("titles", () => {
     }
 
     async function removeTitle(titleId: string) {
-        return new Promise((resolve) => {
+        return new Promise<void>((resolve) => {
             setTimeout(() => {
                 mockJson = mockJson.filter((title) => title.id !== titleId);
                 titlesState.value = getTitlesCopy();
-                resolve(null);
+                resolve();
             }, 2000);
         });
     }
 
     async function rateTitle(titleId: string, rating: number) {
-        return new Promise((resolve) => {
+        return new Promise<void>((resolve) => {
             setTimeout(() => {
                 const foundTitle = findTitle(titleId);
                 if (foundTitle) {
@@ -127,16 +131,16 @@ export const useTitlesStore = defineStore("titles", () => {
                 }
 
                 titlesState.value = getTitlesCopy();
-                resolve(null);
+                resolve();
             }, 2000);
         });
     }
 
     async function fetchTitles() {
-        return new Promise((resolve) => {
+        return new Promise<void>((resolve) => {
             setTimeout(() => {
                 titlesState.value = getTitlesCopy();
-                resolve(null);
+                resolve();
             }, 2000);
         });
     }
@@ -147,11 +151,11 @@ export const useTitlesStore = defineStore("titles", () => {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
-            return new Promise((resolve) => {
+            return new Promise<void>((resolve) => {
                 setTimeout(() => {
                     foundTitle.tags.push(tag);
                     titlesState.value = getTitlesCopy();
-                    resolve(null);
+                    resolve();
                 }, 3000);
             });
         }
@@ -161,13 +165,13 @@ export const useTitlesStore = defineStore("titles", () => {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
-            return new Promise((resolve) => {
+            return new Promise<void>((resolve) => {
                 setTimeout(() => {
                     foundTitle.tags = foundTitle.tags.filter(
                         (item) => item.id !== tag.id
                     );
                     titlesState.value = getTitlesCopy();
-                    resolve(null);
+                    resolve();
                 }, 3000);
             });
         }
@@ -177,11 +181,11 @@ export const useTitlesStore = defineStore("titles", () => {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
-            return new Promise((resolve) => {
+            return new Promise<void>((resolve) => {
                 setTimeout(() => {
                     foundTitle.status = status;
                     titlesState.value = getTitlesCopy();
-                    resolve(null);
+                    resolve();
                 }, 3000);
             });
         }
@@ -191,11 +195,11 @@ export const useTitlesStore = defineStore("titles", () => {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
-            return new Promise((resolve) => {
+            return new Promise<void>((resolve) => {
                 setTimeout(() => {
                     foundTitle.name = name;
                     titlesState.value = getTitlesCopy();
-                    resolve(null);
+                    resolve();
                 }, 2000);
             });
         }
@@ -208,11 +212,11 @@ export const useTitlesStore = defineStore("titles", () => {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
-            return new Promise((resolve) => {
+            return new Promise<void>((resolve) => {
                 setTimeout(() => {
                     foundTitle.description = description;
                     titlesState.value = getTitlesCopy();
-                    resolve(null);
+                    resolve();
                 }, 2000);
             });
         }
@@ -225,12 +229,18 @@ export const useTitlesStore = defineStore("titles", () => {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
-            return new Promise((resolve) => {
-                setTimeout(() => {
+            return new Promise<void>((resolve) => {
+                setTimeout(async () => {
+                    if ("imgFileBase64" in poster && poster.imgFileBase64) {
+                        const blob = await fetch(poster.imgFileBase64).then(
+                            (res) => res.blob()
+                        );
+                        poster.img = URL.createObjectURL(blob);
+                        delete poster.imgFileBase64;
+                    }
                     foundTitle.poster = poster;
                     titlesState.value = getTitlesCopy();
-                    console.log(titlesState.value);
-                    resolve(null);
+                    resolve();
                 }, 2000);
             });
         }

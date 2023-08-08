@@ -1,7 +1,11 @@
 <template>
     <div class="title-poster">
         <a :href="props.poster?.link">
-            <Poster :src="props.poster?.img" class="title-poster__poster" />
+            <Poster
+                :position="props.poster?.position"
+                :src="props.poster?.img"
+                class="title-poster__poster"
+            />
         </a>
 
         <VDialog v-model="isMenuOpen" max-width="800">

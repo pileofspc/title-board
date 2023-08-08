@@ -1,7 +1,7 @@
 <template>
     <VCard class="edit-poster">
         <VCardTitle>Редактирование постера</VCardTitle>
-        <VContainer>
+        <VContainer class="pt-1">
             <VForm @submit.prevent="onSubmit" v-model="isMainValid">
                 <VTextField
                     v-model="extLink"
@@ -18,6 +18,7 @@
                         <VTextField
                             v-model="imgLink"
                             :disabled="isImgLinkDisabled"
+                            validate-on="input"
                             clearable
                             @click:clear="imgLink = ''"
                             :append-inner-icon="
@@ -49,11 +50,12 @@
                     />
                 </div>
 
+                <VCardTitle>Выберите отображаемую часть изображения</VCardTitle>
                 <PosterPosition
                     :position="posterPos"
                     @update-position="updatePos"
                     :src="previewSrc"
-                    class="edit-poster__poster mt-6"
+                    class="edit-poster__poster"
                 />
 
                 <VCardActions class="justify-end">
@@ -91,10 +93,10 @@
     }>();
 
     const imgLink = ref(props.poster?.img || "");
-    const isImgLinkValid = ref(false);
     const isImgLinkDisabled = computed(() => !!file.value);
 
     const extLink = ref(props.poster?.link || "");
+
     const files = shallowRef<File[]>([]);
     const file = computed(() => files.value[0]);
     const fileURL = ref("");
@@ -106,6 +108,7 @@
             fileURL.value = "";
         }
     });
+
     const posterPos = ref<Position>(
         props.poster?.position ? { ...props.poster.position } : { x: 50, y: 50 }
     );
@@ -114,13 +117,41 @@
         posterPos.value.y = y;
     }
 
+    const validatedImgLinkSrc = ref(props.poster?.img || "");
+    watch(
+        imgLink,
+        timeout(() => {
+            if (isImgLinkValid.value) {
+                validatedImgLinkSrc.value = prefix(imgLink.value);
+            } else {
+                validatedImgLinkSrc.value = "";
+            }
+        }, 400)
+    );
+    const previewSrc = computed(() => {
+        return fileURL.value || validatedImgLinkSrc.value;
+    });
+    // Когда ссылка становится равна той, что уже была установлена - позиция тоже возвращается на исходную
+    watch(previewSrc, (val) => {
+        if (val === props.poster?.img && props.poster.position) {
+            posterPos.value = { ...props.poster.position };
+            return;
+        }
+        posterPos.value.x = 50;
+        posterPos.value.y = 50;
+    });
+
+    const isImgLinkValid = ref(false);
     const isMainValid = ref(false);
     const isEverythingValid = computed(() => {
-        return isMainValid.value && isImgLinkValid.value;
+        return (
+            isMainValid.value &&
+            (isImgLinkDisabled.value || isImgLinkValid.value)
+        );
     });
 
     const regexp =
-        /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/;
+        /^data|^blob|[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&/=]*)/;
     const rules = {
         required: (value: unknown) => !!value,
         link: (value: string) =>
@@ -138,9 +169,16 @@
     };
 
     // helper
+    // TODO: на прод переделать нормально
     function prefix(link: string) {
-        const prefix = "https://";
-        return link.startsWith(prefix) ? link : prefix.concat(link);
+        const prefixes = ["data:", "blob:", "file:", "https://"];
+        for (let i = 0; i < prefixes.length; i++) {
+            const prefix = prefixes[i];
+            if (link.startsWith(prefix) || link === "") {
+                return link;
+            }
+        }
+        return "https://".concat(link);
     }
 
     async function onSubmit() {
@@ -149,6 +187,7 @@
         }
 
         const poster: TitlePosterBlob = {};
+        poster.position = posterPos.value;
         if (extLink.value?.length > 0) {
             poster.link = prefix(extLink.value);
         }
@@ -159,21 +198,6 @@
         }
         emit("editPoster", poster);
     }
-
-    const validatedImgLinkSrc = ref(props.poster?.img || "");
-    watch(
-        imgLink,
-        timeout(() => {
-            if (isImgLinkValid.value) {
-                validatedImgLinkSrc.value = prefix(imgLink.value);
-            } else {
-                validatedImgLinkSrc.value = "";
-            }
-        }, 400)
-    );
-    const previewSrc = computed(() => {
-        return fileURL.value || validatedImgLinkSrc.value;
-    });
 </script>
 
 <style scoped lang="scss">
@@ -185,6 +209,7 @@
         }
 
         &__poster {
+            margin-inline: auto;
             max-width: 584px;
         }
     }

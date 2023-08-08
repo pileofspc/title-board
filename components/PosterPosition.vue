@@ -1,7 +1,7 @@
 <template>
     <div
-        @dragstart.prevent
-        @pointerdown="onPointerDown"
+        @pointerdown.prevent="onPointerDown"
+        :class="{ 'poster-position_draggable': !isImageMissing }"
         class="poster-position"
     >
         <Poster
@@ -9,10 +9,26 @@
             :src="props.src"
             @load="
                 (width, height) => {
+                    isImageMissing = false;
                     aspectRatioNatural = width / height;
                 }
             "
-        />
+            @image-missing="isImageMissing = true"
+        >
+            <template #cover>
+                <div
+                    v-if="!isImageMissing"
+                    class="poster-position__cover cover"
+                >
+                    <VIcon
+                        icon="mdi-cursor-move"
+                        class="poster__icon-move"
+                        color="white"
+                        size="40"
+                    />
+                </div>
+            </template>
+        </Poster>
     </div>
 </template>
 
@@ -24,6 +40,8 @@
     const emit = defineEmits<{
         updatePosition: [x: number, y: number];
     }>();
+
+    const isImageMissing = ref(true);
 
     const clickPos: Position = {
         x: 50,
@@ -97,6 +115,7 @@
         emit("updatePosition", clamp(0, resultX, 100), clamp(0, resultY, 100));
     }
 
+    // helper
     function clamp(min: number, val: number, max: number) {
         return Math.max(Math.min(val, max), min);
     }
@@ -104,10 +123,26 @@
 
 <style scoped lang="scss">
     .poster-position {
-        cursor: grab;
-        touch-action: none;
-        &:active {
-            cursor: grabbing;
+        &__cover {
+            pointer-events: none;
+            transition: filter 0.2s;
+            background-color: transparentize($color: #000000, $amount: 0.5);
+        }
+
+        &_draggable {
+            cursor: grab;
+            touch-action: none;
+
+            &:hover,
+            &:active {
+                .poster-position__cover {
+                    filter: opacity(0);
+                }
+            }
+
+            &:active {
+                cursor: grabbing;
+            }
         }
     }
 </style>
