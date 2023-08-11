@@ -1,31 +1,31 @@
 <template>
     <VCard class="add-tag">
         <VContainer>
-            <VForm @submit.prevent v-model="valid">
+            <VForm @submit.prevent="onAddTag" v-model="valid">
                 <div class="mb-2">Цвет</div>
                 <VItemGroup
                     selected-class="add-tag__selected"
                     mandatory="force"
                     class="add-tag__colors"
                 >
-                    <template v-for="color in colors">
-                        <VItem
-                            v-slot="{ selectedClass, select }"
-                            @group:selected="selectedColor = color"
-                        >
-                            <VBtn
-                                @click="select"
-                                density="compact"
-                                :color="color"
-                                :class="selectedClass"
-                                class="add-tag__color"
-                            />
-                        </VItem>
-                    </template>
+                    <VItem
+                        v-for="color in colors"
+                        v-slot="{ selectedClass, select }"
+                        @group:selected="selectedColor = color"
+                    >
+                        <VBtn
+                            @click="select"
+                            density="compact"
+                            :color="color"
+                            :class="selectedClass"
+                            class="add-tag__color"
+                        />
+                    </VItem>
                 </VItemGroup>
 
                 <div class="mt-4">Текст</div>
                 <VTextField
+                    ref="input"
                     v-model="tagText"
                     clearable
                     @click:clear="tagText = ''"
@@ -40,7 +40,6 @@
                         type="submit"
                         :loading="props.loading"
                         :disabled="props.disabled"
-                        @click="onAddTag"
                         variant="elevated"
                         color="blue-grey"
                         class="mt-2"
@@ -62,6 +61,8 @@
 </template>
 
 <script setup lang="ts">
+    import type { VTextField } from "vuetify/lib/components/index.mjs";
+
     const props = defineProps({
         loading: {
             type: Boolean,
@@ -72,7 +73,7 @@
     });
     const emit = defineEmits<{
         close: [];
-        addTag: [Tag];
+        addTag: [tag: Tag];
     }>();
     const colors = useColors().value;
 
@@ -86,6 +87,7 @@
         },
     ];
 
+    const input = ref<InstanceType<typeof VTextField> | null>(null);
     function onAddTag() {
         if (!valid.value) {
             return;
@@ -95,6 +97,7 @@
             color: selectedColor.value,
             text: tagText.value,
         });
+        input.value?.reset();
     }
 </script>
 

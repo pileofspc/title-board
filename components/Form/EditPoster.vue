@@ -61,7 +61,7 @@
                 <VCardActions class="justify-end">
                     <VBtn
                         type="submit"
-                        :loading="props.loading"
+                        :disabled="props.disabled"
                         color="blue-grey"
                         variant="elevated"
                         class="mt-2"
@@ -84,7 +84,7 @@
 
 <script setup lang="ts">
     const props = defineProps<{
-        loading?: boolean;
+        disabled?: boolean;
         poster?: TitlePoster;
     }>();
     const emit = defineEmits<{
@@ -172,8 +172,7 @@
     // TODO: на прод переделать нормально
     function prefix(link: string) {
         const prefixes = ["data:", "blob:", "file:", "https://"];
-        for (let i = 0; i < prefixes.length; i++) {
-            const prefix = prefixes[i];
+        for (const prefix of prefixes) {
             if (link.startsWith(prefix) || link === "") {
                 return link;
             }
@@ -191,12 +190,13 @@
         if (extLink.value?.length > 0) {
             poster.link = prefix(extLink.value);
         }
-        if (imgLink.value?.length > 0 && !file.value) {
-            poster.img = prefix(imgLink.value);
-        } else {
+        if (file.value) {
             poster.imgFileBase64 = await blobToBase64(file.value);
+        } else if (imgLink.value.length > 0) {
+            poster.img = prefix(imgLink.value);
         }
         emit("editPoster", poster);
+        emit("close");
     }
 </script>
 

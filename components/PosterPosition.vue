@@ -57,6 +57,9 @@
     let imageHeight: number;
     let aspectRatioNatural: number;
 
+    // TODO: Переделать так, чтобы работало для всех разрешений экрана: сейчас работает только для ширины больше ширины контейнера,
+    // а в остальных случаях одна из координат всегда 100% или -100%
+
     function onPointerDown(e: PointerEvent) {
         if (!props.src || !props.position) {
             return;
@@ -91,7 +94,6 @@
             }
         );
     }
-
     function onPointerMove(e: PointerEvent) {
         if (!props.src || !props.position) {
             return;
@@ -113,11 +115,6 @@
         const resultY = savedPos.y - offsetYPercentage;
 
         emit("updatePosition", clamp(0, resultX, 100), clamp(0, resultY, 100));
-    }
-
-    // helper
-    function clamp(min: number, val: number, max: number) {
-        return Math.max(Math.min(val, max), min);
     }
 </script>
 

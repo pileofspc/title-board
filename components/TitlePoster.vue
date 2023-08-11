@@ -21,7 +21,7 @@
             <FormEditPoster
                 @close="close"
                 @edit-poster="onEditPoster"
-                :loading="props.loading"
+                :disabled="props.disabled"
                 :poster="props.poster"
             />
         </VDialog>
@@ -30,7 +30,7 @@
 
 <script setup lang="ts">
     const props = defineProps<{
-        loading?: boolean;
+        disabled?: boolean;
         poster?: TitlePoster;
     }>();
     const emit = defineEmits<{

@@ -22,5 +22,13 @@ export default defineNuxtPlugin((nuxtApp) => {
             listeners.delete(el);
         },
     };
+
+    const focus: Directive<HTMLElement, EventListener> = {
+        mounted(el) {
+            el.focus();
+        },
+    };
+
     nuxtApp.vueApp.directive("outside", outside);
+    nuxtApp.vueApp.directive("focus", focus);
 });

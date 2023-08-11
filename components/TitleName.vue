@@ -1,12 +1,15 @@
 <template>
     <div class="title-name" v-outside="close">
-        <VForm v-if="isEditing" v-model="isValid" @submit.prevent="accept">
+        <VForm
+            v-if="props.editing ?? isEditing"
+            v-model="isValid"
+            @submit.prevent="accept"
+        >
             <VTextField
-                ref="input"
                 v-model="value"
+                autofocus
                 :rules="rules"
                 :loading="props.loading"
-                :disabled="props.loading"
                 density="compact"
                 hide-details
                 class="title-name__input"
@@ -14,6 +17,7 @@
                 <template #append-inner>
                     <VBtn
                         @click="accept"
+                        :disabled="props.disabled"
                         variant="flat"
                         icon="mdi-check"
                         density="compact"
@@ -32,45 +36,52 @@
             </VTextField>
         </VForm>
 
-        <VCardTitle v-if="!isEditing" class="title-name__content">
-            {{ props.text }}
-        </VCardTitle>
-        <!-- <VCardSubtitle
-            v-if="!isEditing && props.variant === 'subtitle'"
-            class="title-name__content"
-        >
-            {{ props.text }}
-        </VCardSubtitle>
-        <slot v-if="!isEditing && props.variant === 'other'"></slot> -->
+        <template v-else>
+            <component
+                :is="components[props.variant]"
+                class="title-name__content"
+            >
+                {{ props.text }}
+            </component>
 
-        <VBtn
-            v-if="!isEditing"
-            @click="edit"
-            variant="plain"
-            density="comfortable"
-            icon="mdi-pencil"
-            color="blue-grey-lighten-1"
-            class="title-name__edit"
-        />
+            <VBtn
+                @click="edit"
+                variant="plain"
+                density="comfortable"
+                icon="mdi-pencil"
+                color="blue-grey-lighten-1"
+                class="title-name__edit"
+            />
+        </template>
     </div>
 </template>
 
 <script setup lang="ts">
-    import type { VTextField } from "vuetify/components";
-    // type Variant = "title" | "subtitle" | "other";
+    import { VCardTitle, VCardSubtitle } from "vuetify/components";
 
+    const props = withDefaults(
+        defineProps<{
+            text: string;
+            loading?: boolean;
+            disabled?: boolean;
+            editing?: boolean;
+            variant?: keyof typeof components;
+        }>(),
+        {
+            variant: "title",
+        }
+    );
     const emit = defineEmits<{
         changeName: [name: string, stopEditingFn: typeof close];
+        "update:editing": [value: boolean];
     }>();
 
-    const props = defineProps<{
-        text: string;
-        loading?: boolean;
-        // variant: Variant;
-    }>();
+    const components = {
+        title: VCardTitle,
+        subtitle: VCardSubtitle,
+    } as const;
 
     const isValid = ref(false);
-    const input = ref<InstanceType<typeof VTextField> | null>(null);
     const isEditing = ref(false);
     const value = ref(props.text);
 
@@ -82,14 +93,15 @@
 
     function edit() {
         value.value = props.text;
-        isEditing.value = true;
-        nextTick(() => {
-            input.value?.focus();
-        });
+        def(props.editing)
+            ? emit("update:editing", true)
+            : (isEditing.value = true);
     }
 
     function close() {
-        isEditing.value = false;
+        def(props.editing)
+            ? emit("update:editing", false)
+            : (isEditing.value = false);
     }
 
     function accept() {

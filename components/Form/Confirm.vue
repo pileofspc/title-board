@@ -6,7 +6,13 @@
             color="blue-grey"
             prepend-icon="mdi-check-circle-outline"
             :loading="props.loading"
-            @click="emit('confirm')"
+            :disabled="props.disabled"
+            @click="
+                () => {
+                    emit('confirm');
+                    emit('close');
+                }
+            "
         >
             Да
         </VBtn>
@@ -30,6 +36,9 @@
 
     const props = defineProps({
         loading: {
+            type: Boolean,
+        },
+        disabled: {
             type: Boolean,
         },
     });

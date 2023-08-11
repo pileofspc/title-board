@@ -17,13 +17,14 @@
                     density="compact"
                     :loading="props.loading"
                     :disabled="props.disabled"
-                    @click="() => emit('removeTag', tag)"
+                    @click="emit('removeTag', tag)"
                 />
             </VChip>
         </TransitionGroup>
 
         <VMenu
-            v-model="isMenuOpen"
+            :model-value="props.menu ?? isMenuOpen"
+            @update:model-value="onMenuToggle"
             location="bottom start"
             :close-on-content-click="false"
             offset="8"
@@ -41,21 +42,14 @@
             <FormAddTag
                 :loading="props.loading"
                 :disabled="props.disabled"
-                @close="isMenuOpen = false"
-                @add-tag="onAddTag"
+                @close="closeMenu"
+                @add-tag="(tag) => emit('addTag', tag)"
             />
         </VMenu>
     </div>
 </template>
 
 <script setup lang="ts">
-    import type { VChip } from "vuetify/lib/components/index.mjs";
-
-    const emit = defineEmits<{
-        addTag: [tag: Tag, closeMenuFn: () => void];
-        removeTag: [tag: Tag];
-    }>();
-
     const props = defineProps({
         tags: {
             type: Array as PropType<Tag[]>,
@@ -67,15 +61,31 @@
         disabled: {
             type: Boolean,
         },
+        menu: {
+            type: Boolean,
+            default: undefined,
+        },
     });
+    const emit = defineEmits<{
+        addTag: [tag: Tag];
+        removeTag: [tag: Tag];
+        "update:menu": [value: boolean];
+    }>();
 
     const isMenuOpen = ref(false);
-
-    function onAddTag(tag: Tag) {
-        emit("addTag", tag, closeMenu);
+    function onMenuToggle(value: boolean) {
+        if (props.menu === undefined) {
+            (isMenuOpen as Ref<boolean>).value = value;
+        } else {
+            emit("update:menu", value);
+        }
     }
     function closeMenu() {
-        isMenuOpen.value = false;
+        if (props.menu !== undefined) {
+            emit("update:menu", false);
+        } else {
+            isMenuOpen.value = false;
+        }
     }
 </script>
 

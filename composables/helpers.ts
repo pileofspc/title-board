@@ -22,3 +22,9 @@ export function blobToBase64(file: File) {
         reader.onerror = reject;
     });
 }
+export function def(value: unknown) {
+    return value !== undefined && value !== null;
+}
+export function clamp(min: number, val: number, max: number) {
+    return Math.max(Math.min(val, max), min);
+}

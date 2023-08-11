@@ -1,6 +1,10 @@
 <template>
-    <template v-if="!loading">
+    <VCard v-if="loading" loading rounded="lg" min-height="230" class="card" />
+    <template v-else>
         <TransitionGroup>
+            <div v-if="titlesStore.titles.length === 0" key="nothing">
+                Пока ничего нет :(
+            </div>
             <TitleItem
                 v-for="title in titlesStore.titles"
                 :title="title"
@@ -9,7 +13,6 @@
             />
         </TransitionGroup>
     </template>
-    <VCard v-else rounded="lg" loading min-height="230" class="card"></VCard>
 </template>
 
 <script setup lang="ts">
