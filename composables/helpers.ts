@@ -28,3 +28,14 @@ export function def(value: unknown) {
 export function clamp(min: number, val: number, max: number) {
     return Math.max(Math.min(val, max), min);
 }
+export function getCoords(elem: Element) {
+    let box = elem.getBoundingClientRect();
+    return {
+        top: box.top + window.scrollY,
+        right: box.right + window.scrollX,
+        bottom: box.bottom + window.scrollY,
+        left: box.left + window.scrollX,
+        width: box.width,
+        height: box.height,
+    };
+}

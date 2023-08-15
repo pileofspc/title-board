@@ -3,25 +3,18 @@
         <VContainer>
             <VForm @submit.prevent="onAddTag" v-model="valid">
                 <div class="mb-2">Цвет</div>
-                <VItemGroup
-                    selected-class="add-tag__selected"
-                    mandatory="force"
-                    class="add-tag__colors"
-                >
-                    <VItem
+                <div class="add-tag__colors">
+                    <VBtn
                         v-for="color in colors"
-                        v-slot="{ selectedClass, select }"
-                        @group:selected="selectedColor = color"
-                    >
-                        <VBtn
-                            @click="select"
-                            density="compact"
-                            :color="color"
-                            :class="selectedClass"
-                            class="add-tag__color"
-                        />
-                    </VItem>
-                </VItemGroup>
+                        @click="selectColor(color)"
+                        density="compact"
+                        :color="color"
+                        :class="{
+                            'add-tag__selected': selectedColor === color,
+                        }"
+                        class="add-tag__color"
+                    />
+                </div>
 
                 <div class="mt-4">Текст</div>
                 <VTextField
@@ -29,7 +22,7 @@
                     v-model="tagText"
                     clearable
                     @click:clear="tagText = ''"
-                    :maxlength="max"
+                    :maxlength="50"
                     :rules="rules"
                     counter
                     density="compact"
@@ -75,24 +68,26 @@
         close: [];
         addTag: [tag: Tag];
     }>();
-    const colors = useColors().value;
 
     const valid = ref(false);
     const tagText = ref("");
-    const selectedColor = ref<Color>(colors[0]);
-    const max = 50;
     const rules = [
         (value: string) => {
             return value?.length > 0 || "Обязательно для заполнения";
         },
     ];
 
+    const colors = useColors().value;
+    const selectedColor = ref<Color>(colors[0]);
+    function selectColor(color: Color) {
+        selectedColor.value = color;
+    }
+
     const input = ref<InstanceType<typeof VTextField> | null>(null);
     function onAddTag() {
         if (!valid.value) {
             return;
         }
-
         emit("addTag", {
             color: selectedColor.value,
             text: tagText.value,

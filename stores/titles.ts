@@ -75,6 +75,51 @@ export const useTitlesStore = defineStore("titles", () => {
                     color: "blue",
                     text: "blue",
                 },
+                {
+                    id: "t4",
+                    color: "indigo",
+                    text: "blueasdfhdsf",
+                },
+                {
+                    id: "t5",
+                    color: "amber",
+                    text: "fsdfjdsfhdsg",
+                },
+                {
+                    id: "t6",
+                    color: "green",
+                    text: "sdfjhsdfjdsfj",
+                },
+                {
+                    id: "t7",
+                    color: "red",
+                    text: "sdfjdsfhgsadg",
+                },
+                {
+                    id: "t8",
+                    color: "blue",
+                    text: "blue",
+                },
+                {
+                    id: "t9",
+                    color: "blue",
+                    text: "blue",
+                },
+                {
+                    id: "t10",
+                    color: "blue",
+                    text: "blue",
+                },
+                {
+                    id: "t11",
+                    color: "blue",
+                    text: "blue",
+                },
+                {
+                    id: "t12",
+                    color: "blue",
+                    text: "blue",
+                },
             ],
         },
         {
@@ -141,7 +186,7 @@ export const useTitlesStore = defineStore("titles", () => {
             setTimeout(() => {
                 titlesState.value = getTitlesCopy();
                 resolve();
-            }, 2000);
+            }, 200);
         });
     }
 
@@ -172,7 +217,7 @@ export const useTitlesStore = defineStore("titles", () => {
                     );
                     titlesState.value = getTitlesCopy();
                     resolve();
-                }, 3000);
+                }, 300);
             });
         }
     }
