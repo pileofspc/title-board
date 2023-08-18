@@ -1,9 +1,18 @@
 <template>
     <VCard class="card" rounded="lg" :loading="loading">
         <VCardItem>
+            <div class="title-item__poster-container">
+                <TitlePoster
+                    :poster="props.title.poster"
+                    :disabled="loading"
+                    @edit-poster="onEditPoster"
+                    class="title-item__poster"
+                />
+            </div>
             <div class="title-item__data">
                 <TagGroup
                     :tags="props.title.tags"
+                    :max-tags="5"
                     :disabled="loading"
                     @add-tag="onAddTag"
                     @remove-tag="onRemoveTag"
@@ -14,14 +23,14 @@
                         :text="props.title.name"
                         :disabled="loading"
                         v-model:editing="isEditingName"
-                        @change-name="onTitleNameChange"
+                        @name-change="onTitleNameChange"
                         variant="title"
                     />
                     <TitleName
                         :text="props.title.description"
                         :disabled="loading"
                         v-model:editing="isEditingDescription"
-                        @change-name="onTitleDescriptionChange"
+                        @name-change="onTitleDescriptionChange"
                         variant="subtitle"
                     />
                 </div>
@@ -80,13 +89,6 @@
                     </VMenu>
                 </div>
             </div>
-
-            <TitlePoster
-                :poster="props.title.poster"
-                :disabled="loading"
-                @edit-poster="onEditPoster"
-                class="title-item__poster"
-            />
         </VCardItem>
     </VCard>
 </template>
@@ -98,9 +100,16 @@
     }>();
     const emit = defineEmits<{
         "update:loading": [value: boolean];
+        addTag: [titleId: string, tag: Tag];
+        removeTag: [titleId: string, tag: Tag];
+        removeTitle: [titleId: string];
+        ratingChange: [titleId: string, rating: number];
+        statusChange: [titleId: string, status: TitleStatus];
+        nameChange: [titleId: string, name: string];
+        descriptionChange: [titleId: string, description: string];
+        posterChange: [titleId: string, poster: TitlePoster];
     }>();
 
-    const titlesStore = useTitlesStore();
     const statuses = useStatuses();
 
     const isRemoveTitleMenuOpen = ref(false);
@@ -108,71 +117,49 @@
     const isEditingDescription = ref(false);
     const loading = ref(false);
 
-    async function asyncAction(
-        action: (...args: any[]) => void | Promise<unknown>
-    ) {
-        loading.value = true;
-        await action();
-        loading.value = false;
-    }
-
     function onAddTag(tag: Tag) {
-        asyncAction(async () => {
-            await titlesStore.addTag(props.title.id, tag);
-        });
+        emit("addTag", props.title.id, tag);
     }
     function onRemoveTag(tag: Tag) {
-        asyncAction(async () => {
-            await titlesStore.removeTag(props.title.id, tag);
-        });
+        emit("removeTag", props.title.id, tag);
     }
     function onRemoveTitle() {
-        asyncAction(async () => {
-            await titlesStore.removeTitle(props.title.id);
-            isRemoveTitleMenuOpen.value = false;
-        });
+        emit("removeTitle", props.title.id);
+        isRemoveTitleMenuOpen.value = false;
     }
     function onRatingChange(rating: string | number) {
-        asyncAction(async () => {
-            rating = typeof rating === "string" ? parseInt(rating) : rating;
-            await titlesStore.rateTitle(props.title.id, rating);
-        });
+        rating = typeof rating === "string" ? parseInt(rating) : rating;
+        emit("ratingChange", props.title.id, rating);
     }
     function onStatusSelected(status: TitleStatus) {
-        asyncAction(async () => {
-            await titlesStore.changeTitleStatus(props.title.id, status);
-        });
+        emit("statusChange", props.title.id, status);
     }
     function onTitleNameChange(name: string) {
-        asyncAction(async () => {
-            await titlesStore.changeTitleName(props.title.id, name);
-            isEditingName.value = false;
-        });
+        emit("nameChange", props.title.id, name);
+        // TODO: then isEditingName.value = false
     }
     function onTitleDescriptionChange(description: string) {
-        asyncAction(async () => {
-            await titlesStore.changeTitleDescription(
-                props.title.id,
-                description
-            );
-            isEditingDescription.value = false;
-        });
+        emit("descriptionChange", props.title.id, description);
+        // TODO: then isEditingDescription.value = false
     }
     function onEditPoster(poster: TitlePoster) {
-        asyncAction(async () => {
-            await titlesStore.changeTitlePoster(props.title.id, poster);
-        });
+        emit("posterChange", props.title.id, poster);
     }
 </script>
 
 <style scoped lang="scss">
     .title-item {
-        &__poster {
+        &__poster-container {
             position: absolute;
             top: 0;
             bottom: 0;
             right: 0;
             left: 50%;
+        }
+
+        &__poster {
+            width: 100%;
+            height: 100%;
         }
 
         &__data {
@@ -185,6 +172,18 @@
             position: absolute;
             right: 0;
             bottom: 0;
+        }
+    }
+
+    @media (max-width: 850px) {
+        .title-item {
+            &__poster-container {
+                position: static;
+                margin-bottom: 12px;
+            }
+            &__data {
+                max-width: none;
+            }
         }
     }
 </style>

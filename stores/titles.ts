@@ -85,41 +85,6 @@ export const useTitlesStore = defineStore("titles", () => {
                     color: "amber",
                     text: "fsdfjdsfhdsg",
                 },
-                {
-                    id: "t6",
-                    color: "green",
-                    text: "sdfjhsdfjdsfj",
-                },
-                {
-                    id: "t7",
-                    color: "red",
-                    text: "sdfjdsfhgsadg",
-                },
-                {
-                    id: "t8",
-                    color: "blue",
-                    text: "blue",
-                },
-                {
-                    id: "t9",
-                    color: "blue",
-                    text: "blue",
-                },
-                {
-                    id: "t10",
-                    color: "blue",
-                    text: "blue",
-                },
-                {
-                    id: "t11",
-                    color: "blue",
-                    text: "blue",
-                },
-                {
-                    id: "t12",
-                    color: "blue",
-                    text: "blue",
-                },
             ],
         },
         {
@@ -157,7 +122,7 @@ export const useTitlesStore = defineStore("titles", () => {
         return JSON.parse(JSON.stringify(mockJson));
     }
 
-    async function removeTitle(titleId: string) {
+    function removeTitle(titleId: string) {
         return new Promise<void>((resolve) => {
             setTimeout(() => {
                 mockJson = mockJson.filter((title) => title.id !== titleId);
@@ -167,7 +132,7 @@ export const useTitlesStore = defineStore("titles", () => {
         });
     }
 
-    async function rateTitle(titleId: string, rating: number) {
+    function rateTitle(titleId: string, rating: number) {
         return new Promise<void>((resolve) => {
             setTimeout(() => {
                 const foundTitle = findTitle(titleId);
@@ -181,7 +146,7 @@ export const useTitlesStore = defineStore("titles", () => {
         });
     }
 
-    async function fetchTitles() {
+    function fetchTitles() {
         return new Promise<void>((resolve) => {
             setTimeout(() => {
                 titlesState.value = getTitlesCopy();
@@ -190,7 +155,7 @@ export const useTitlesStore = defineStore("titles", () => {
         });
     }
 
-    async function addTag(titleId: string, tag: Tag) {
+    function addTag(titleId: string, tag: Tag) {
         // uuid временно пока нет фетчинга
         tag.id = uuidv4();
         const foundTitle = findTitle(titleId);
@@ -206,7 +171,7 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
-    async function removeTag(titleId: string, tag: Tag) {
+    function removeTag(titleId: string, tag: Tag) {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
@@ -222,7 +187,7 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
-    async function changeTitleStatus(titleId: string, status: TitleStatus) {
+    function changeTitleStatus(titleId: string, status: TitleStatus) {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
@@ -236,7 +201,7 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
-    async function changeTitleName(titleId: string, name: string) {
+    function changeTitleName(titleId: string, name: string) {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
@@ -250,10 +215,7 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
-    async function changeTitleDescription(
-        titleId: string,
-        description: string
-    ) {
+    function changeTitleDescription(titleId: string, description: string) {
         const foundTitle = findTitle(titleId);
 
         if (foundTitle) {
@@ -267,7 +229,7 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
-    async function changeTitlePoster(
+    function changeTitlePoster(
         titleId: string,
         poster: TitlePoster | TitlePosterBlob
     ) {

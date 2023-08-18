@@ -51,6 +51,7 @@
 <style scoped lang="scss">
     .title-poster {
         position: relative;
+        overflow: hidden;
 
         &:hover {
             .title-poster__button {

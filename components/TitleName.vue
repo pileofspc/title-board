@@ -72,7 +72,7 @@
         }
     );
     const emit = defineEmits<{
-        changeName: [name: string, stopEditingFn: typeof close];
+        nameChange: [name: string];
         "update:editing": [value: boolean];
     }>();
 
@@ -106,7 +106,7 @@
 
     function accept() {
         if (isValid.value) {
-            emit("changeName", value.value, close);
+            emit("nameChange", value.value);
         }
     }
 </script>

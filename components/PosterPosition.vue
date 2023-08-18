@@ -94,6 +94,7 @@
             }
         );
     }
+    // FIXME: т.к менять можно максимум одну координату (так работает cover), то нужно вторую сделать всегда 50%
     function onPointerMove(e: PointerEvent) {
         if (!props.src || !props.position) {
             return;

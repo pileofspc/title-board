@@ -22,7 +22,7 @@
                     v-model="tagText"
                     clearable
                     @click:clear="tagText = ''"
-                    :maxlength="50"
+                    :maxlength="25"
                     :rules="rules"
                     counter
                     density="compact"

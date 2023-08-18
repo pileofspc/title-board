@@ -4,7 +4,7 @@
             <VListItem
                 v-for="(status, key) in statuses"
                 :key="status.display"
-                color="blue-grey"
+                :base-color="status.color"
                 :value="status.display"
                 :title="status.display"
                 @click="emit('selected', key)"

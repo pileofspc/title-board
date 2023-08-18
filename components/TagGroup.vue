@@ -63,6 +63,9 @@
             type: Array as PropType<Tag[]>,
             default: [],
         },
+        maxTags: {
+            type: [Number, String],
+        },
         loading: {
             type: Boolean,
         },
@@ -81,9 +84,15 @@
     }>();
 
     const menuActivator = ref<InstanceType<typeof VChip> | null>(null);
-    const maxTags = 10;
     const isMenuOpen = ref(false);
-    const isAtMaxTags = computed(() => props.tags.length >= maxTags);
+    const isAtMaxTags = computed(() => {
+        if (!props.maxTags) return false;
+        const num =
+            typeof props.maxTags === "string"
+                ? parseInt(props.maxTags)
+                : props.maxTags;
+        return props.tags.length >= num;
+    });
     watch(
         isAtMaxTags,
         (val) => {
