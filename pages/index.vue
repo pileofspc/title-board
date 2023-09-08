@@ -1,6 +1,6 @@
 <template>
-    <TopBar class="mb-4" />
-    <ListTitles />
+    <TopBar />
+    <ModuleListTitles />
 </template>
 
 <script setup lang="ts"></script>

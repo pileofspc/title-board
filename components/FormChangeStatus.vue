@@ -14,10 +14,11 @@
 </template>
 
 <script setup lang="ts">
+    import { statuses } from "~/constants";
+
     const emit = defineEmits<{
         selected: [statusKey: TitleStatus];
     }>();
-    const statuses = useStatuses();
 </script>
 
 <style scoped lang="scss">

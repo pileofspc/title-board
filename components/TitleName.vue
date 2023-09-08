@@ -43,6 +43,18 @@
             >
                 {{ props.text }}
             </component>
+            <!-- <VCardTitle
+                v-if="props.variant === 'title'"
+                class="title-name__content"
+            >
+                {{ props.text }}
+            </VCardTitle>
+            <VCardSubtitle
+                v-else-if="props.variant === 'subtitle'"
+                class="title-name__content"
+            >
+                {{ props.text }}
+            </VCardSubtitle> -->
 
             <VBtn
                 @click="edit"
@@ -66,6 +78,7 @@
             disabled?: boolean;
             editing?: boolean;
             variant?: keyof typeof components;
+            // variant?: "title" | "subtitle";
         }>(),
         {
             variant: "title",

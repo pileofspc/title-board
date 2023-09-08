@@ -1,23 +1,23 @@
 <template>
     <VContainer fluid class="d-flex pa-0">
         <SearchBar class="flex-grow-1" />
-        <VDialog>
-            <template #activator="{ props: slotProps }">
-                <VBtn
-                    class="ml-4 h-auto"
-                    text="Добавить"
-                    color="blue-grey"
-                    v-bind="slotProps"
-                >
-                    <template #prepend>
-                        <VIcon icon="mdi-plus" />
-                    </template>
-                </VBtn>
+        <VBtn
+            @click="onAddClick"
+            class="ml-4 h-auto"
+            text="Добавить"
+            color="blue-grey"
+        >
+            <template #prepend>
+                <VIcon icon="mdi-plus" />
             </template>
-
-            <VCard>
-                <VCardTitle>123</VCardTitle>
-            </VCard>
-        </VDialog>
+        </VBtn>
     </VContainer>
 </template>
+
+<script setup lang="ts">
+    const globalStore = useGlobalStore();
+
+    function onAddClick() {
+        globalStore.isAddingTitle = true;
+    }
+</script>

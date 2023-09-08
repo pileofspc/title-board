@@ -1,18 +1,11 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-    // devtools: { enabled: true },
-    // postcss: {
-    //     plugins: {
-    //         tailwindcss: {},
-    //         autoprefixer: {},
-    //     },
-    // },
     modules: ["@invictus.codes/nuxt-vuetify", "@pinia/nuxt"],
     pinia: {
         autoImports: ["defineStore"],
     },
     imports: {
-        dirs: ["stores"],
+        dirs: ["./stores"],
     },
     vuetify: {
         vuetifyOptions: {
@@ -37,8 +30,5 @@ export default defineNuxtConfig({
         moduleOptions: {
             useIconCDN: false,
         },
-    },
-    typescript: {
-        strict: true,
     },
 });

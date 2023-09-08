@@ -10,7 +10,7 @@
             @click="
                 () => {
                     emit('confirm');
-                    emit('close');
+                    emit('cancel');
                 }
             "
         >
@@ -21,7 +21,7 @@
             color="blue-grey"
             class="ml-2"
             prepend-icon="mdi-close-circle-outline"
-            @click="emit('close')"
+            @click="emit('cancel')"
         >
             Нет
         </VBtn>
@@ -29,11 +29,6 @@
 </template>
 
 <script setup lang="ts">
-    const emit = defineEmits<{
-        confirm: [];
-        close: [];
-    }>();
-
     const props = defineProps({
         loading: {
             type: Boolean,
@@ -42,4 +37,8 @@
             type: Boolean,
         },
     });
+    const emit = defineEmits<{
+        confirm: [];
+        cancel: [];
+    }>();
 </script>

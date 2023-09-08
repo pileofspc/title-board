@@ -185,7 +185,7 @@
             return;
         }
 
-        const poster: TitlePosterBlob = {};
+        const poster: TitlePoster = {};
         poster.position = posterPos.value;
         if (extLink.value?.length > 0) {
             poster.link = prefix(extLink.value);

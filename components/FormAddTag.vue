@@ -55,6 +55,8 @@
 
 <script setup lang="ts">
     import type { VTextField } from "vuetify/lib/components/index.mjs";
+    import { v4 } from "uuid";
+    import { colors } from "~/constants";
 
     const props = defineProps({
         loading: {
@@ -77,7 +79,6 @@
         },
     ];
 
-    const colors = useColors().value;
     const selectedColor = ref<Color>(colors[0]);
     function selectColor(color: Color) {
         selectedColor.value = color;
@@ -89,6 +90,7 @@
             return;
         }
         emit("addTag", {
+            id: v4(),
             color: selectedColor.value,
             text: tagText.value,
         });
