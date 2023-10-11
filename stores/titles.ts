@@ -339,7 +339,6 @@ export const useTitlesStore = defineStore("titles", () => {
         }
 
         if (title) {
-            console.log(1);
             return new Promise<ApiResponse<Title>>((resolve) => {
                 setTimeout(() => {
                     title.poster = poster;
