@@ -1,8 +1,5 @@
 <template>
-    <div
-        v-if="globalStore.isAddingTitle"
-        class="title-placeholder rounded-lg pa-4"
-    >
+    <div class="title-placeholder rounded-lg pa-4">
         <TitleCard
             :title="title"
             :loading="loading"

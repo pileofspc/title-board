@@ -6,6 +6,7 @@
             @submit.prevent="accept"
         >
             <VTextField
+                spellcheck="false"
                 v-model="value"
                 autofocus
                 :rules="rules"

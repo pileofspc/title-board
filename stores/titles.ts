@@ -338,6 +338,19 @@ export const useTitlesStore = defineStore("titles", () => {
             }).then(updateExistingTitle);
         }
 
+        if (title) {
+            console.log(1);
+            return new Promise<ApiResponse<Title>>((resolve) => {
+                setTimeout(() => {
+                    title.poster = poster;
+                    resolve({
+                        success: true,
+                        data: deepCopy(title),
+                    });
+                }, 2000);
+            }).then(updateExistingTitle);
+        }
+
         return new Promise<ApiResponse<Title>>((resolve) => {
             setTimeout(() => {
                 resolve({
