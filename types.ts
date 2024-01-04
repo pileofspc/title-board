@@ -38,11 +38,11 @@ type Title = {
     tags: Tag[];
 };
 
-type ApiResponse<T> =
-    | {
-          success: true;
-          data: T;
-      }
-    | {
-          success: false;
-      };
+// type ApiResponse<T> =
+//     | {
+//           success: true;
+//           data: T;
+//       }
+//     | {
+//           success: false;
+//       };

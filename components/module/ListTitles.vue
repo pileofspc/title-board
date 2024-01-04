@@ -40,6 +40,7 @@
                 </template>
             </div>
         </TransitionGroup>
+        <VPagination :length="5" color="blue-grey" v-model="currentPage" />
     </div>
 </template>
 
@@ -61,6 +62,7 @@
     }
 
     // FIXME: При удалении тайтла почему-то происходит анимация тегов
+    const currentPage = ref(1);
 </script>
 
 <style scoped lang="scss">

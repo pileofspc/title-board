@@ -62,6 +62,6 @@
         action(() => titlesStore.changeTitlePoster(props.title.id, poster));
     }
     async function onRemoveTitle() {
-        action(() => titlesStore.removeTitle(props.title.id));
+        return action(() => titlesStore.removeTitle(props.title.id));
     }
 </script>
