@@ -1,4 +1,4 @@
-import { titles, removeTitle } from "../titles.server";
+import { getTitles } from "@/server/titles.server";
 
 export default defineEventHandler(async (event) => {
     // const query = getQuery(event);
@@ -7,7 +7,6 @@ export default defineEventHandler(async (event) => {
     // const filter = query.filter;
     // const sort = query.sort;
     const body = await readBody(event);
-    removeTitle(body.id);
-
-    return titles;
+    // return await removeTitle(body.id);
+    return await getTitles();
 });

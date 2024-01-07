@@ -16,6 +16,9 @@ type Tag = {
     text: string;
 };
 
+// TODO:
+// Переделать типы более осознанно и синхронизировать с бэковыми
+
 type Position = {
     x: number;
     y: number;
@@ -36,6 +39,26 @@ type Title = {
     rating?: number;
     poster?: TitlePoster;
     tags: Tag[];
+};
+
+// id: '73bdb104-c262-40aa-85b9-27ddc5bbcd83',
+// name: null,
+// description: null,
+// rating: 5,
+// img: null,
+// link: null,
+// pos_x: null,
+// pos_y: null
+type TitleServer = {
+    id: string;
+    name: string;
+    description: string;
+    status: TitleStatus;
+    rating?: number;
+    img?: string;
+    link?: string;
+    pos_x?: number;
+    pos_y?: number;
 };
 
 // type ApiResponse<T> =

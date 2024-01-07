@@ -12,20 +12,51 @@ export const useTitlesStore = defineStore("titles", () => {
     //     return res;
     // }
 
+    function mapTitles(titles: TitleServer[]): Title[] {
+        return titles.map((item) => {
+            return {
+                id: item.id,
+                name: item.name,
+                description: item.description,
+                status: item.status,
+                rating: item.rating,
+                poster: {
+                    img: item.img,
+                    link: item.link,
+                    position: {
+                        x: item.pos_x || 50,
+                        y: item.pos_y || 50,
+                    },
+                },
+                tags: [],
+            };
+        });
+    }
+
     async function fetchTitles() {
-        const response = await useFetch("/api/titles");
+        const response = await useFetch<TitleServer[]>("/api/titles");
+        if (!response.data.value) {
+            return [];
+        }
+
+        const mappedTitles = mapTitles(response.data.value);
         if (response.data.value !== null) {
-            titlesState.value = response.data.value;
+            titlesState.value = mappedTitles;
         }
     }
 
     async function addTitle(title: Title) {
-        const response = await useFetch("/api/titles", {
+        const response = await useFetch<TitleServer[]>("/api/titles", {
             method: "POST",
             body: title,
         });
+        if (!response.data.value) {
+            return [];
+        }
+
+        const mappedTitles = mapTitles(response.data.value);
         if (response.data.value !== null) {
-            titlesState.value = response.data.value;
+            titlesState.value = mappedTitles;
         }
         return response.data.value;
     }
@@ -43,7 +74,7 @@ export const useTitlesStore = defineStore("titles", () => {
         return response.data.value;
     }
 
-    function rateTitle(titleId: string, rating: number) {
+    async function rateTitle(titleId: string, rating: number) {
         // return new Promise<ApiResponse<Title>>((resolve) => {
         //     setTimeout(() => {
         //         const title = findTitle(titleId);
@@ -62,7 +93,7 @@ export const useTitlesStore = defineStore("titles", () => {
         // }).then(updateExistingTitle);
     }
 
-    function addTag(titleId: string, tag: Tag) {
+    async function addTag(titleId: string, tag: Tag) {
         // return new Promise<ApiResponse<Title>>((resolve) => {
         //     setTimeout(() => {
         //         // тут присвоение типа и uuid временно пока нет фетчинга
@@ -83,7 +114,7 @@ export const useTitlesStore = defineStore("titles", () => {
         // }).then(updateExistingTitle);
     }
 
-    function removeTag(titleId: string, tag: Tag) {
+    async function removeTag(titleId: string, tag: Tag) {
         // return new Promise<ApiResponse<Title>>((resolve) => {
         //     setTimeout(() => {
         //         const title = findTitle(titleId);
@@ -104,7 +135,7 @@ export const useTitlesStore = defineStore("titles", () => {
         // }).then(updateExistingTitle);
     }
 
-    function changeTitleStatus(titleId: string, status: TitleStatus) {
+    async function changeTitleStatus(titleId: string, status: TitleStatus) {
         // return new Promise<ApiResponse<Title>>((resolve) => {
         //     setTimeout(() => {
         //         const title = findTitle(titleId);
@@ -123,7 +154,7 @@ export const useTitlesStore = defineStore("titles", () => {
         // }).then(updateExistingTitle);
     }
 
-    function changeTitleName(titleId: string, name: string) {
+    async function changeTitleName(titleId: string, name: string) {
         // return new Promise<ApiResponse<Title>>((resolve) => {
         //     setTimeout(() => {
         //         const title = findTitle(titleId);
@@ -142,7 +173,10 @@ export const useTitlesStore = defineStore("titles", () => {
         // }).then(updateExistingTitle);
     }
 
-    function changeTitleDescription(titleId: string, description: string) {
+    async function changeTitleDescription(
+        titleId: string,
+        description: string
+    ) {
         // return new Promise<ApiResponse<Title>>((resolve) => {
         //     setTimeout(() => {
         //         const title = findTitle(titleId);

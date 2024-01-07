@@ -14,6 +14,7 @@
         "@nuxt/devtools": "latest",
         "@pinia/nuxt": "^0.4.11",
         "@types/node": "^18.16.19",
+        "@types/pg": "^8.10.9",
         "@types/uuid": "^9.0.2",
         "autoprefixer": "^10.4.14",
         "nuxt": "^3.9.0",
@@ -24,6 +25,7 @@
     },
     "dependencies": {
         "csv": "^6.3.6",
+        "pg": "^8.11.3",
         "pinia": "^2.1.4",
         "uuid": "^9.0.0",
         "vuetify": "^3.3.8"

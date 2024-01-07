@@ -1,4 +1,4 @@
-import { titles } from "../titles.server";
+import { getTitles } from "@/server/titles.server";
 
 export default defineEventHandler((event) => {
     // const query = getQuery(event);
@@ -7,5 +7,5 @@ export default defineEventHandler((event) => {
     // const filter = query.filter;
     // const sort = query.sort;
 
-    return titles;
+    return getTitles();
 });
