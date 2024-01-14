@@ -1,4 +1,5 @@
 import pg from "pg";
+
 const pool = new pg.Pool({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -7,6 +8,6 @@ const pool = new pg.Pool({
     database: process.env.DB_NAME,
 });
 
-export async function query(text: string) {
-    return await pool.query(text);
+export async function query(text: string, values?: unknown[]) {
+    return pool.query(text, values);
 }

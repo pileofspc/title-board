@@ -79,7 +79,6 @@
             disabled?: boolean;
             editing?: boolean;
             variant?: keyof typeof components;
-            // variant?: "title" | "subtitle";
         }>(),
         {
             variant: "title",
@@ -107,13 +106,13 @@
 
     function edit() {
         value.value = props.text;
-        def(props.editing)
+        isDefined(props.editing)
             ? emit("update:editing", true)
             : (isEditing.value = true);
     }
 
     function close() {
-        def(props.editing)
+        isDefined(props.editing)
             ? emit("update:editing", false)
             : (isEditing.value = false);
     }

@@ -25,3 +25,7 @@ export const statuses = {
 } as const;
 
 // TODO: Убрать все захардкоженные строки, связанные с цветами и статусами
+
+export const apiEndpoints = {
+    titles: "http://localhost:3000/api/titles",
+};

@@ -12,7 +12,7 @@ export function timeout<T extends (...args: any[]) => any>(
         }, delay);
     };
 }
-export function blobToBase64(file: File) {
+export async function blobToBase64(file: File) {
     return new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -22,7 +22,7 @@ export function blobToBase64(file: File) {
         reader.onerror = reject;
     });
 }
-export function def(value: unknown) {
+export function isDefined<T>(value: T | null | undefined): value is T {
     return value !== undefined && value !== null;
 }
 export function clamp(min: number, val: number, max: number) {

@@ -40,7 +40,11 @@
                 </template>
             </div>
         </TransitionGroup>
-        <VPagination :length="5" color="blue-grey" v-model="currentPage" />
+        <VPagination
+            :length="titlesStore.pages"
+            color="blue-grey"
+            v-model="currentPage"
+        />
     </div>
 </template>
 
@@ -49,20 +53,27 @@
     const globalStore = useGlobalStore();
 
     const titles = computed(() => titlesStore.titles);
+    const loading = ref(false);
+    const currentPage = ref(1);
 
-    const loading = ref(true);
-    titlesStore.fetchTitles().then(() => {
-        loading.value = false;
-    });
+    watch(
+        currentPage,
+        async () => {
+            loading.value = true;
+            await titlesStore.fetchTitles(currentPage.value - 1);
+            loading.value = false;
+        },
+        {
+            immediate: true,
+        }
+    );
 
+    // FIXME: При удалении тайтла почему-то происходит анимация тегов
     function beforeLeave(element: Element) {
         const el = element as HTMLElement;
         const rect = getCoords(el);
         el.style.width = `${rect.width}px`;
     }
-
-    // FIXME: При удалении тайтла почему-то происходит анимация тегов
-    const currentPage = ref(1);
 </script>
 
 <style scoped lang="scss">

@@ -1,6 +1,11 @@
+import { apiEndpoints } from "~/constants";
+import { isDefined } from "~/utils/helpers";
+
 export const useTitlesStore = defineStore("titles", () => {
-    const titlesState = ref<Title[]>([]);
-    const titles = computed(() => titlesState.value);
+    const titles = ref<Title[]>([]);
+    const pages = ref(0);
+    const titlesComputed = computed(() => titles.value);
+    const pagesComputed = computed(() => pages.value);
 
     // function updateExistingTitle(res: ApiResponse<Title>) {
     //     if (!res.success) {
@@ -12,6 +17,7 @@ export const useTitlesStore = defineStore("titles", () => {
     //     return res;
     // }
 
+    // TODO: Привести Title и TitleServer к единому виду или хотя бы прилично переделать эту функцию с правильной типизацией
     function mapTitles(titles: TitleServer[]): Title[] {
         return titles.map((item) => {
             return {
@@ -33,16 +39,39 @@ export const useTitlesStore = defineStore("titles", () => {
         });
     }
 
-    async function fetchTitles() {
-        const response = await useFetch<TitleServer[]>("/api/titles");
-        if (!response.data.value) {
+    async function fetchPagesAmount() {
+        const url = new URL(apiEndpoints.titles);
+        url.searchParams.append("total", "true");
+
+        const response = await useFetch<number>(url.toString());
+        if (response.error.value || !response.data.value) {
+            console.warn(
+                `Ошибка при запросе на сервер: ${response.error.value?.message}`
+            );
+            return 0;
+        }
+
+        pages.value = response.data.value;
+    }
+
+    async function fetchTitles(page?: number) {
+        const url = new URL(apiEndpoints.titles);
+        url.searchParams.append("perpage", "10");
+        url.searchParams.append(
+            "page",
+            typeof page === "number" ? `${page}` : "0"
+        );
+
+        const response = await useFetch<TitleServer[]>(url.toString());
+        if (response.error.value || !response.data.value) {
+            console.warn(
+                `Ошибка при запросе на сервер: ${response.error.value?.message}`
+            );
             return [];
         }
 
-        const mappedTitles = mapTitles(response.data.value);
-        if (response.data.value !== null) {
-            titlesState.value = mappedTitles;
-        }
+        // await fetchPagesAmount();
+        titles.value = mapTitles(response.data.value);
     }
 
     async function addTitle(title: Title) {
@@ -50,13 +79,12 @@ export const useTitlesStore = defineStore("titles", () => {
             method: "POST",
             body: title,
         });
-        if (!response.data.value) {
-            return [];
+        if (response.error) {
+            return;
         }
 
-        const mappedTitles = mapTitles(response.data.value);
-        if (response.data.value !== null) {
-            titlesState.value = mappedTitles;
+        if (isDefined(response.data.value)) {
+            titles.value = mapTitles(response.data.value);
         }
         return response.data.value;
     }
@@ -69,7 +97,7 @@ export const useTitlesStore = defineStore("titles", () => {
             },
         });
         if (response.data.value !== null) {
-            titlesState.value = response.data.value;
+            titles.value = response.data.value;
         }
         return response.data.value;
     }
@@ -237,7 +265,8 @@ export const useTitlesStore = defineStore("titles", () => {
     }
 
     return {
-        titles,
+        titles: titlesComputed,
+        pages: pagesComputed,
         fetchTitles,
         addTitle,
         removeTitle,

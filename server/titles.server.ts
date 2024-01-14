@@ -134,7 +134,7 @@ export async function addTitle(title: Title) {
 
     await query(`INSERT INTO titles(name, description, rating, img, link, pos_x, pos_y, status)
     VALUES('Новый тайтл', 'хеллоу', '5', 'https://www.ixbt.com/img/n1/news/2022/5/0/dobro.JPG', 'https://www.youtube.com/', '50', '50', 'NOT_WATCHED')`);
-    return await getTitles();
+    return await getAllTitles();
 }
 // export function removeTitle(titleId: string) {
 //     titles = titles.filter((title) => title.id !== titleId);
@@ -143,11 +143,25 @@ export async function addTitle(title: Title) {
 //     titles[titles.findIndex((item) => item.id === titleId)] = newTitle;
 // }
 
-export async function getTitles(): Promise<TitleServer[]> {
-    try {
-        return (await query("SELECT * FROM titles")).rows;
-    } catch (e) {
-        console.log("ошибка");
-        return [];
-    }
+export async function getAllTitles(): Promise<TitleServer[]> {
+    return (await query("SELECT * FROM titles")).rows;
+}
+export async function getTitles(
+    perpage: number,
+    offset: number
+): Promise<TitleServer[]> {
+    const result = await query(
+        "SELECT * FROM titles ORDER BY id DESC LIMIT $1 OFFSET $2",
+        [perpage, offset]
+    );
+
+    return result.rows;
+}
+
+export async function getTitlesTotal(): Promise<number> {
+    return (
+        await query(
+            "SELECT reltuples FROM pg_class WHERE oid = 'public.titles'::regclass;"
+        )
+    )?.rows[0]?.reltuples;
 }
