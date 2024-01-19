@@ -5,12 +5,13 @@
                 v-if="globalStore.isAddingTitle"
                 key="first"
                 class="placeholder"
+                @done="onTitleAdded"
             />
             <div v-else key="third"></div>
 
             <div class="title-list__main" key="second">
                 <VCard
-                    v-if="loading"
+                    v-if="isLoading"
                     loading
                     rounded="lg"
                     min-height="230"
@@ -41,6 +42,8 @@
             </div>
         </TransitionGroup>
         <VPagination
+            v-if="titlesStore.pages > 1"
+            :disabled="isLoading"
             :length="titlesStore.pages"
             color="blue-grey"
             v-model="currentPage"
@@ -53,20 +56,23 @@
     const globalStore = useGlobalStore();
 
     const titles = computed(() => titlesStore.titles);
-    const loading = ref(false);
+    const isLoading = ref(false);
     const currentPage = ref(1);
 
-    watch(
-        currentPage,
-        async () => {
-            loading.value = true;
-            await titlesStore.fetchTitles(currentPage.value - 1);
-            loading.value = false;
-        },
-        {
-            immediate: true,
-        }
-    );
+    async function performFetch() {
+        isLoading.value = true;
+        titlesStore.fetchPagesAmount();
+        await titlesStore.fetchTitles(currentPage.value - 1);
+        isLoading.value = false;
+    }
+
+    async function onTitleAdded() {
+        await performFetch();
+    }
+
+    watch(currentPage, performFetch, {
+        immediate: true,
+    });
 
     // FIXME: При удалении тайтла почему-то происходит анимация тегов
     function beforeLeave(element: Element) {

@@ -19,6 +19,11 @@
         title: Title;
     }>();
 
+    // TODO: этого эмита быть не должно: он нужен только потому,
+    //  что непонятно какую конкретно страницу фетчить, т.к пока не понимаю,
+    // как в наксте в сторе использовать одну функцию из другой (смотреть в ListTitles и titles.client.ts).
+    const emit = defineEmits(["done"]);
+
     const titlesStore = useTitlesStore();
     const loading = ref(false);
     const isRemoveTitleMenuOpen = ref(false);
@@ -42,8 +47,9 @@
     }
     async function onRatingChange(rating: number) {
         action(() => {
-            rating = typeof rating === "string" ? parseInt(rating) : rating;
-            return titlesStore.rateTitle(props.title.id, rating);
+            const intRating =
+                typeof rating === "string" ? parseInt(rating) : rating;
+            return titlesStore.rateTitle(props.title.id, intRating);
         });
     }
     async function onStatusChange(status: TitleStatus) {
@@ -62,6 +68,6 @@
         action(() => titlesStore.changeTitlePoster(props.title.id, poster));
     }
     async function onRemoveTitle() {
-        return action(() => titlesStore.removeTitle(props.title.id));
+        return action(() => titlesStore.deleteTitle(props.title.id));
     }
 </script>

@@ -28,4 +28,4 @@ export const statuses = {
 
 export const apiEndpoints = {
     titles: "http://localhost:3000/api/titles",
-};
+} as const;

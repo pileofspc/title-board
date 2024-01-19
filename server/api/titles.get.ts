@@ -18,27 +18,32 @@ export default defineEventHandler(async (event) => {
     ] as const;
 
     if (query.total) {
-        try {
-            return await getTitlesTotal();
-        } catch (error) {
+        const [data, error] = await handleAsync(getTitlesTotal());
+        if (error) {
             setResponseStatus(...errorArgs);
             return 0;
         }
+
+        return data;
     }
 
     if (query.page !== undefined) {
-        try {
-            return await getTitles(perpage, page * perpage + 1);
-        } catch (error) {
+        const [data, error] = await handleAsync(
+            getTitles(perpage, page * perpage)
+        );
+        if (error) {
             setResponseStatus(...errorArgs);
             return [];
         }
+
+        return data;
     }
 
-    try {
-        return await getAllTitles();
-    } catch (error) {
+    const [data, error] = await handleAsync(getAllTitles());
+    if (error) {
         setResponseStatus(...errorArgs);
         return [];
     }
+
+    return data;
 });

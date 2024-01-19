@@ -6,19 +6,10 @@ export const useTitlesStore = defineStore("titles", () => {
     const pages = ref(0);
     const titlesComputed = computed(() => titles.value);
     const pagesComputed = computed(() => pages.value);
-
-    // function updateExistingTitle(res: ApiResponse<Title>) {
-    //     if (!res.success) {
-    //         return res;
-    //     }
-    //     titlesState.value[
-    //         titlesState.value.findIndex((item) => item.id === res.data.id)
-    //     ] = res.data;
-    //     return res;
-    // }
+    const PER_PAGE = 10;
 
     // TODO: Привести Title и TitleServer к единому виду или хотя бы прилично переделать эту функцию с правильной типизацией
-    function mapTitles(titles: TitleServer[]): Title[] {
+    function mapToClient(titles: TitleServer[]): Title[] {
         return titles.map((item) => {
             return {
                 id: item.id,
@@ -39,24 +30,41 @@ export const useTitlesStore = defineStore("titles", () => {
         });
     }
 
+    function mapToServer(titles: Title[]): TitleServer[] {
+        return titles.map((item) => {
+            return {
+                id: "0",
+                name: item.name,
+                description: item.description,
+                rating: item.rating,
+                img: item.poster?.img,
+                link: item.poster?.link,
+                pos_x: item.poster?.position?.x,
+                pos_y: item.poster?.position?.y,
+                status: "NOT_WATCHED",
+            };
+        });
+    }
+
     async function fetchPagesAmount() {
         const url = new URL(apiEndpoints.titles);
         url.searchParams.append("total", "true");
 
         const response = await useFetch<number>(url.toString());
         if (response.error.value || !response.data.value) {
-            console.warn(
+            console.error(
                 `Ошибка при запросе на сервер: ${response.error.value?.message}`
             );
-            return 0;
+            pages.value = 0;
+            return;
         }
 
-        pages.value = response.data.value;
+        pages.value = Math.ceil(response.data.value / PER_PAGE);
     }
 
     async function fetchTitles(page?: number) {
         const url = new URL(apiEndpoints.titles);
-        url.searchParams.append("perpage", "10");
+        url.searchParams.append("perpage", String(PER_PAGE));
         url.searchParams.append(
             "page",
             typeof page === "number" ? `${page}` : "0"
@@ -64,41 +72,47 @@ export const useTitlesStore = defineStore("titles", () => {
 
         const response = await useFetch<TitleServer[]>(url.toString());
         if (response.error.value || !response.data.value) {
-            console.warn(
+            console.error(
                 `Ошибка при запросе на сервер: ${response.error.value?.message}`
             );
-            return [];
-        }
-
-        // await fetchPagesAmount();
-        titles.value = mapTitles(response.data.value);
-    }
-
-    async function addTitle(title: Title) {
-        const response = await useFetch<TitleServer[]>("/api/titles", {
-            method: "POST",
-            body: title,
-        });
-        if (response.error) {
+            titles.value = [];
             return;
         }
 
-        if (isDefined(response.data.value)) {
-            titles.value = mapTitles(response.data.value);
-        }
-        return response.data.value;
+        titles.value = mapToClient(response.data.value);
     }
 
-    async function removeTitle(titleId: string) {
-        const response = await useFetch("/api/title", {
-            method: "DELETE",
-            body: {
-                id: titleId,
-            },
+    async function addTitle(title: Title) {
+        const mappedTitle = mapToServer([title])[0];
+
+        const url = new URL(apiEndpoints.titles);
+        const response = await useFetch<TitleServer>(url.toString(), {
+            method: "POST",
+            body: mappedTitle,
         });
-        if (response.data.value !== null) {
-            titles.value = response.data.value;
+        if (response.error || !response.data.value) {
+            console.error(
+                `Ошибка при запросе на сервер: ${response.error.value?.message}`
+            );
+            return;
         }
+
+        return mapToClient([response.data.value])[0];
+    }
+
+    async function deleteTitle(titleId: string) {
+        const url = new URL(apiEndpoints.titles);
+        const response = await useFetch<TitleServer>(url.toString(), {
+            method: "DELETE",
+            body: titleId,
+        });
+        if (response.error || !response.data.value) {
+            console.error(
+                `Ошибка при запросе на сервер: ${response.error.value?.message}`
+            );
+            return;
+        }
+        console.log(response.data.value);
         return response.data.value;
     }
 
@@ -268,8 +282,9 @@ export const useTitlesStore = defineStore("titles", () => {
         titles: titlesComputed,
         pages: pagesComputed,
         fetchTitles,
+        fetchPagesAmount,
         addTitle,
-        removeTitle,
+        deleteTitle,
         changeTitleName,
         changeTitleDescription,
         changeTitlePoster,
