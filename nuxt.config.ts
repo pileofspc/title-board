@@ -1,12 +1,15 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
     modules: ["@invictus.codes/nuxt-vuetify", "@pinia/nuxt"],
+
     pinia: {
         autoImports: ["defineStore"],
     },
+
     imports: {
         dirs: ["./stores"],
     },
+
     vuetify: {
         vuetifyOptions: {
             theme: {
@@ -30,5 +33,9 @@ export default defineNuxtConfig({
         moduleOptions: {
             useIconCDN: false,
         },
+    },
+
+    devtools: {
+        enabled: false,
     },
 });

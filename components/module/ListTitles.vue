@@ -5,7 +5,7 @@
                 v-if="globalStore.isAddingTitle"
                 key="first"
                 class="placeholder"
-                @done="onTitleAdded"
+                @done="performFetch"
             />
             <div v-else key="third"></div>
 
@@ -27,7 +27,8 @@
                             <ModuleTitle
                                 v-for="title in titles"
                                 :title="title"
-                                :key="title.id"
+                                :key="title.uuid"
+                                @done="performFetch"
                                 class="title-list__title"
                             />
                         </TransitionGroup>
@@ -62,12 +63,14 @@
     async function performFetch() {
         isLoading.value = true;
         titlesStore.fetchPagesAmount();
-        await titlesStore.fetchTitles(currentPage.value - 1);
-        isLoading.value = false;
-    }
+        await titlesStore.fetchTitles(
+            currentPage.value - 1 >= 0 ? currentPage.value - 1 : 0
+        );
 
-    async function onTitleAdded() {
-        await performFetch();
+        if (titles.value.length === 0 && currentPage.value > 0) {
+            currentPage.value--;
+        }
+        isLoading.value = false;
     }
 
     watch(currentPage, performFetch, {

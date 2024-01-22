@@ -15,6 +15,7 @@ type Tag = {
     color: Color;
     text: string;
 };
+type TagPartial = Omit<Tag, "id">;
 
 // TODO:
 // Переделать типы более осознанно и синхронизировать с бэковыми
@@ -32,7 +33,7 @@ type TitlePoster = {
 };
 
 type Title = {
-    id: string;
+    uuid: string;
     name: string;
     description: string;
     status: TitleStatus;
@@ -40,16 +41,10 @@ type Title = {
     poster?: TitlePoster;
     tags: Tag[];
 };
+type TitlePartial = Omit<Title, "id">;
 
-// id: '73bdb104-c262-40aa-85b9-27ddc5bbcd83',
-// name: null,
-// description: null,
-// rating: 5,
-// img: null,
-// link: null,
-// pos_x: null,
-// pos_y: null
 type TitleServer = {
+    uuid: string;
     id: string;
     name: string;
     description: string;
@@ -57,15 +52,8 @@ type TitleServer = {
     rating?: number;
     img?: string;
     link?: string;
-    pos_x?: number;
-    pos_y?: number;
+    pos_x: number;
+    pos_y: number;
+    tags: Tag[];
 };
-
-// type ApiResponse<T> =
-//     | {
-//           success: true;
-//           data: T;
-//       }
-//     | {
-//           success: false;
-//       };
+type TitleServerPartial = Omit<TitleServer, "uuid" | "id" | "pos_x" | "pos_y">;

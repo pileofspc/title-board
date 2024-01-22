@@ -1,5 +1,4 @@
 import { apiEndpoints } from "~/constants";
-import { isDefined } from "~/utils/helpers";
 
 export const useTitlesStore = defineStore("titles", () => {
     const titles = ref<Title[]>([]);
@@ -13,6 +12,7 @@ export const useTitlesStore = defineStore("titles", () => {
         return titles.map((item) => {
             return {
                 id: item.id,
+                uuid: item.uuid,
                 name: item.name,
                 description: item.description,
                 status: item.status,
@@ -21,27 +21,27 @@ export const useTitlesStore = defineStore("titles", () => {
                     img: item.img,
                     link: item.link,
                     position: {
-                        x: item.pos_x || 50,
-                        y: item.pos_y || 50,
+                        x: item.pos_x,
+                        y: item.pos_y,
                     },
                 },
-                tags: [],
+                tags: item.tags,
             };
         });
     }
 
-    function mapToServer(titles: Title[]): TitleServer[] {
+    function mapToServerPartial(titles: Title[]): TitleServerPartial[] {
         return titles.map((item) => {
             return {
-                id: "0",
                 name: item.name,
                 description: item.description,
                 rating: item.rating,
                 img: item.poster?.img,
                 link: item.poster?.link,
-                pos_x: item.poster?.position?.x,
-                pos_y: item.poster?.position?.y,
+                pos_x: item.poster?.position?.x || 50,
+                pos_y: item.poster?.position?.y || 50,
                 status: "NOT_WATCHED",
+                tags: item.tags,
             };
         });
     }
@@ -67,7 +67,7 @@ export const useTitlesStore = defineStore("titles", () => {
         url.searchParams.append("perpage", String(PER_PAGE));
         url.searchParams.append(
             "page",
-            typeof page === "number" ? `${page}` : "0"
+            typeof page === "number" && page >= 0 ? `${page}` : "0"
         );
 
         const response = await useFetch<TitleServer[]>(url.toString());
@@ -83,16 +83,18 @@ export const useTitlesStore = defineStore("titles", () => {
     }
 
     async function addTitle(title: Title) {
-        const mappedTitle = mapToServer([title])[0];
+        const mappedTitle = mapToServerPartial([title])[0];
 
         const url = new URL(apiEndpoints.titles);
         const response = await useFetch<TitleServer>(url.toString(), {
             method: "POST",
             body: mappedTitle,
         });
-        if (response.error || !response.data.value) {
+        if (response.error.value || !response.data.value) {
+            console.log(response);
             console.error(
-                `Ошибка при запросе на сервер: ${response.error.value?.message}`
+                `Ошибка при запросе на сервер: ${response.error.value?.message}
+                Статус-код: ${response.error.value?.statusCode}`
             );
             return;
         }
@@ -104,16 +106,15 @@ export const useTitlesStore = defineStore("titles", () => {
         const url = new URL(apiEndpoints.titles);
         const response = await useFetch<TitleServer>(url.toString(), {
             method: "DELETE",
-            body: titleId,
+            body: { uuid: titleId },
         });
-        if (response.error || !response.data.value) {
+        if (response.error.value) {
             console.error(
                 `Ошибка при запросе на сервер: ${response.error.value?.message}`
             );
             return;
         }
-        console.log(response.data.value);
-        return response.data.value;
+        return;
     }
 
     async function rateTitle(titleId: string, rating: number) {

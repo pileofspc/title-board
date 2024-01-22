@@ -2,7 +2,7 @@ import {
     getTitles,
     getAllTitles,
     getTitlesTotal,
-} from "~/server/titles.server";
+} from "~/server/services/titles.server";
 
 export default defineEventHandler(async (event) => {
     const query = getQuery(event);

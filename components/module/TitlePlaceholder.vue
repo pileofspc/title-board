@@ -11,7 +11,7 @@
             @add-tag="onAddTag"
             @remove-tag="onRemoveTag"
             @poster-change="onPosterChange"
-            @confirm="onConfirm"
+            @confirm="onConfirmAddingTitle"
             @cancel="onCancel"
         />
     </div>
@@ -31,7 +31,7 @@
 
     // TODO: Тут не должно быть айдишника, т.к он присваивается в базе
     const title = ref<Title>({
-        id: v4(),
+        uuid: v4(),
         name: "Новый тайтл",
         description: "Новое описание",
         rating: 0,
@@ -39,14 +39,6 @@
         tags: [],
     });
     const loading = ref(false);
-    // function action<T extends () => Promise<any>>(awaited: T): ReturnType<T> {
-    //     loading.value = true;
-
-    //     return awaited().then((res) => {
-    //         loading.value = false;
-    //         return res;
-    //     }) as ReturnType<T>;
-    // }
 
     function onNameChange(name: string) {
         title.value.name = name;
@@ -72,7 +64,7 @@
     function onPosterChange(poster: TitlePoster) {
         title.value.poster = poster;
     }
-    async function onConfirm(title: Title) {
+    async function onConfirmAddingTitle(title: Title) {
         loading.value = true;
         await titlesStore.addTitle(title);
         loading.value = false;

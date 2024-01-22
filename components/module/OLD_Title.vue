@@ -167,35 +167,35 @@
     }
 
     async function onNameChange(name: string) {
-        await action(() => titlesStore.changeTitleName(props.title.id, name));
+        await action(() => titlesStore.changeTitleName(props.title.uuid, name));
         isEditingName.value = false;
     }
     async function onDescriptionChange(description: string) {
         await action(() =>
-            titlesStore.changeTitleDescription(props.title.id, description)
+            titlesStore.changeTitleDescription(props.title.uuid, description)
         );
         isEditingDescription.value = false;
     }
     async function onRatingChange(rating: string | number) {
         action(() => {
             rating = typeof rating === "string" ? parseInt(rating) : rating;
-            return titlesStore.rateTitle(props.title.id, rating);
+            return titlesStore.rateTitle(props.title.uuid, rating);
         });
     }
     async function onStatusChange(status: TitleStatus) {
-        action(() => titlesStore.changeTitleStatus(props.title.id, status));
+        action(() => titlesStore.changeTitleStatus(props.title.uuid, status));
     }
     async function onAddTag(tag: Tag) {
-        action(() => titlesStore.addTag(props.title.id, tag));
+        action(() => titlesStore.addTag(props.title.uuid, tag));
     }
     async function onRemoveTag(tag: Tag) {
-        action(() => titlesStore.removeTag(props.title.id, tag));
+        action(() => titlesStore.removeTag(props.title.uuid, tag));
     }
     async function onEditPoster(poster: TitlePoster) {
-        action(() => titlesStore.changeTitlePoster(props.title.id, poster));
+        action(() => titlesStore.changeTitlePoster(props.title.uuid, poster));
     }
     async function onRemoveTitle() {
-        action(() => titlesStore.removeTitle(props.title.id));
+        action(() => titlesStore.removeTitle(props.title.uuid));
         isRemoveTitleMenuOpen.value = false;
     }
 </script>
