@@ -9,7 +9,39 @@ const defaultTitle = {
     tags: [],
 };
 
-export async function addTitle(title: TitleServer): Promise<TitleServer[]> {
+export async function updateTitle(title: TitleServer): Promise<TitleServer[]> {
+    return (
+        await query(
+            `UPDATE titles
+            SET name = $2,
+                description = $3,
+                rating = $4,
+                img = $5,
+                link = $6,
+                pos_x = $7,
+                pos_y = $8,
+                status = $9
+            WHERE uuid = $1
+            RETURNING *
+        `,
+            [
+                title.uuid,
+                title.name || defaultTitle.name,
+                title.description || defaultTitle.description,
+                title.rating,
+                title.img,
+                title.link,
+                title.pos_x || defaultTitle.pos_x,
+                title.pos_y || defaultTitle.pos_y,
+                title.status || defaultTitle.status,
+            ]
+        )
+    ).rows[0];
+}
+
+export async function addTitle(
+    title: TitleServerPartial
+): Promise<TitleServer[]> {
     return (
         await query(
             "INSERT INTO titles(name, description, rating, img, link, pos_x, pos_y, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
@@ -24,7 +56,7 @@ export async function addTitle(title: TitleServer): Promise<TitleServer[]> {
                 title.status || defaultTitle.status,
             ]
         )
-    ).rows;
+    ).rows[0];
 }
 
 export async function deleteTitle(titleId: string): Promise<TitleServer[]> {
@@ -42,7 +74,7 @@ export async function getTitlesTotal(): Promise<number> {
 }
 
 export async function getAllTitles(): Promise<TitleServer[]> {
-    return (await query("SELECT * FROM titles")).rows;
+    return (await query("SELECT * FROM titles ORDER BY id DESC")).rows;
 }
 export async function getTitles(
     perpage: number,

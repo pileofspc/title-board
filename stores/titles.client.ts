@@ -1,3 +1,4 @@
+import type { NuxtError } from "nuxt/dist/app/composables";
 import { apiEndpoints } from "~/constants";
 
 export const useTitlesStore = defineStore("titles", () => {
@@ -10,7 +11,7 @@ export const useTitlesStore = defineStore("titles", () => {
     // TODO: Привести Title и TitleServer к единому виду или хотя бы прилично переделать эту функцию с правильной типизацией
     function mapToClient(titles: TitleServer[]): Title[] {
         return titles.map((item) => {
-            return {
+            const result: Title = {
                 id: item.id,
                 uuid: item.uuid,
                 name: item.name,
@@ -20,27 +21,37 @@ export const useTitlesStore = defineStore("titles", () => {
                 poster: {
                     img: item.img,
                     link: item.link,
-                    position: {
-                        x: item.pos_x,
-                        y: item.pos_y,
-                    },
                 },
                 tags: item.tags,
             };
+
+            if (
+                result.poster &&
+                typeof item.pos_x === "number" &&
+                typeof item.pos_y === "number"
+            ) {
+                result.poster.position = {
+                    x: item.pos_x,
+                    y: item.pos_y,
+                };
+            }
+            return result;
         });
     }
 
     function mapToServerPartial(titles: Title[]): TitleServerPartial[] {
         return titles.map((item) => {
             return {
+                id: item.id,
+                uuid: item.uuid,
                 name: item.name,
                 description: item.description,
                 rating: item.rating,
                 img: item.poster?.img,
                 link: item.poster?.link,
-                pos_x: item.poster?.position?.x || 50,
-                pos_y: item.poster?.position?.y || 50,
-                status: "NOT_WATCHED",
+                pos_x: item.poster?.position?.x,
+                pos_y: item.poster?.position?.y,
+                status: item.status,
                 tags: item.tags,
             };
         });
@@ -84,14 +95,13 @@ export const useTitlesStore = defineStore("titles", () => {
 
     async function addTitle(title: Title) {
         const mappedTitle = mapToServerPartial([title])[0];
-
         const url = new URL(apiEndpoints.titles);
+
         const response = await useFetch<TitleServer>(url.toString(), {
             method: "POST",
             body: mappedTitle,
         });
         if (response.error.value || !response.data.value) {
-            console.log(response);
             console.error(
                 `Ошибка при запросе на сервер: ${response.error.value?.message}
                 Статус-код: ${response.error.value?.statusCode}`
@@ -117,181 +127,224 @@ export const useTitlesStore = defineStore("titles", () => {
         return;
     }
 
-    async function rateTitle(titleId: string, rating: number) {
-        // return new Promise<ApiResponse<Title>>((resolve) => {
-        //     setTimeout(() => {
-        //         const title = findTitle(titleId);
-        //         if (title) {
-        //             title.rating = rating;
-        //             resolve({
-        //                 success: true,
-        //                 data: deepCopy(title),
-        //             });
-        //         } else {
-        //             resolve({
-        //                 success: false,
-        //             });
-        //         }
-        //     }, 2000);
-        // }).then(updateExistingTitle);
+    // async function rateTitle(titleId: string, rating: number) {
+    // return new Promise<ApiResponse<Title>>((resolve) => {
+    //     setTimeout(() => {
+    //         const title = findTitle(titleId);
+    //         if (title) {
+    //             title.rating = rating;
+    //             resolve({
+    //                 success: true,
+    //                 data: deepCopy(title),
+    //             });
+    //         } else {
+    //             resolve({
+    //                 success: false,
+    //             });
+    //         }
+    //     }, 2000);
+    // }).then(updateExistingTitle);
+    // }
+
+    // async function addTag(titleId: string, tag: Tag) {
+    // return new Promise<ApiResponse<Title>>((resolve) => {
+    //     setTimeout(() => {
+    //         // тут присвоение типа и uuid временно пока нет фетчинга
+    //         tag.id = uuidv4();
+    //         const title = findTitle(titleId);
+    //         if (title) {
+    //             title.tags.push(tag);
+    //             resolve({
+    //                 success: true,
+    //                 data: deepCopy(title),
+    //             });
+    //         } else {
+    //             resolve({
+    //                 success: false,
+    //             });
+    //         }
+    //     }, 3000);
+    // }).then(updateExistingTitle);
+    // }
+
+    // async function removeTag(titleId: string, tag: Tag) {
+    // return new Promise<ApiResponse<Title>>((resolve) => {
+    //     setTimeout(() => {
+    //         const title = findTitle(titleId);
+    //         if (title) {
+    //             title.tags = title.tags.filter(
+    //                 (item) => item.id !== tag.id
+    //             );
+    //             resolve({
+    //                 success: true,
+    //                 data: deepCopy(title),
+    //             });
+    //         } else {
+    //             resolve({
+    //                 success: false,
+    //             });
+    //         }
+    //     }, 300);
+    // }).then(updateExistingTitle);
+    // }
+
+    // async function changeTitleStatus(titleId: string, status: TitleStatus) {
+    // return new Promise<ApiResponse<Title>>((resolve) => {
+    //     setTimeout(() => {
+    //         const title = findTitle(titleId);
+    //         if (title) {
+    //             title.status = status;
+    //             resolve({
+    //                 success: true,
+    //                 data: deepCopy(title),
+    //             });
+    //         } else {
+    //             resolve({
+    //                 success: false,
+    //             });
+    //         }
+    //     }, 3000);
+    // }).then(updateExistingTitle);
+    // }
+
+    // async function changeTitleName(titleId: string, name: string) {
+    // return new Promise<ApiResponse<Title>>((resolve) => {
+    //     setTimeout(() => {
+    //         const title = findTitle(titleId);
+    //         if (title) {
+    //             title.name = name;
+    //             resolve({
+    //                 success: true,
+    //                 data: deepCopy(title),
+    //             });
+    //         } else {
+    //             resolve({
+    //                 success: false,
+    //             });
+    //         }
+    //     }, 2000);
+    // }).then(updateExistingTitle);
+    // }
+
+    // async function changeTitleDescription(
+    //     titleId: string,
+    //     description: string
+    // ) {
+    // return new Promise<ApiResponse<Title>>((resolve) => {
+    //     setTimeout(() => {
+    //         const title = findTitle(titleId);
+    //         if (title) {
+    //             title.description = description;
+    //             resolve({
+    //                 success: true,
+    //                 data: deepCopy(title),
+    //             });
+    //         } else {
+    //             resolve({
+    //                 success: false,
+    //             });
+    //         }
+    //     }, 2000);
+    // }).then(updateExistingTitle);
+    // }
+
+    // async function changeTitlePoster(titleId: string, poster: TitlePoster) {
+    // const title = findTitle(titleId);
+    // if (title && "imgFileBase64" in poster && poster.imgFileBase64) {
+    //     if (title?.poster?.img) {
+    //         URL.revokeObjectURL(title.poster.img);
+    //     }
+    //     const blob = await fetch(poster.imgFileBase64).then((res) =>
+    //         res.blob()
+    //     );
+    //     poster.img = URL.createObjectURL(blob);
+    //     delete poster.imgFileBase64;
+    //     return new Promise<ApiResponse<Title>>((resolve) => {
+    //         setTimeout(() => {
+    //             title.poster = poster;
+    //             resolve({
+    //                 success: true,
+    //                 data: deepCopy(title),
+    //             });
+    //         }, 2000);
+    //     }).then(updateExistingTitle);
+    // }
+    // if (title) {
+    //     return new Promise<ApiResponse<Title>>((resolve) => {
+    //         setTimeout(() => {
+    //             title.poster = poster;
+    //             resolve({
+    //                 success: true,
+    //                 data: deepCopy(title),
+    //             });
+    //         }, 2000);
+    //     }).then(updateExistingTitle);
+    // }
+    // return new Promise<ApiResponse<Title>>((resolve) => {
+    //     setTimeout(() => {
+    //         resolve({
+    //             success: false,
+    //         });
+    //     }, 2000);
+    // });
+    // }
+
+    async function updateTitle(title: Title) {
+        const mappedTitle = mapToServerPartial([title])[0];
+        const url = new URL(apiEndpoints.titles);
+
+        try {
+            const response = await $fetch<TitleServer>(url.toString(), {
+                method: "PUT",
+                body: mappedTitle,
+            });
+
+            const mappedResponse = mapToClient([response])[0];
+            const foundIndex = titles.value.findIndex(
+                (item) => item.uuid === mappedResponse?.uuid
+            );
+
+            if (mappedResponse && foundIndex > -1) {
+                titles.value[foundIndex] = mappedResponse;
+            }
+        } catch (error) {
+            const err = error as NuxtError;
+            console.error(
+                `Ошибка при запросе на сервер: ${err.message}
+                Статус-код: ${err.statusCode}`
+            );
+        }
     }
 
-    async function addTag(titleId: string, tag: Tag) {
-        // return new Promise<ApiResponse<Title>>((resolve) => {
-        //     setTimeout(() => {
-        //         // тут присвоение типа и uuid временно пока нет фетчинга
-        //         tag.id = uuidv4();
-        //         const title = findTitle(titleId);
-        //         if (title) {
-        //             title.tags.push(tag);
-        //             resolve({
-        //                 success: true,
-        //                 data: deepCopy(title),
-        //             });
-        //         } else {
-        //             resolve({
-        //                 success: false,
-        //             });
-        //         }
-        //     }, 3000);
-        // }).then(updateExistingTitle);
+    async function addTag(title: Title, tag: Tag) {
+        const tags = [...title.tags, tag];
+        const reqTitle = { ...title, tags };
+        return updateTitle(reqTitle);
     }
 
-    async function removeTag(titleId: string, tag: Tag) {
-        // return new Promise<ApiResponse<Title>>((resolve) => {
-        //     setTimeout(() => {
-        //         const title = findTitle(titleId);
-        //         if (title) {
-        //             title.tags = title.tags.filter(
-        //                 (item) => item.id !== tag.id
-        //             );
-        //             resolve({
-        //                 success: true,
-        //                 data: deepCopy(title),
-        //             });
-        //         } else {
-        //             resolve({
-        //                 success: false,
-        //             });
-        //         }
-        //     }, 300);
-        // }).then(updateExistingTitle);
-    }
-
-    async function changeTitleStatus(titleId: string, status: TitleStatus) {
-        // return new Promise<ApiResponse<Title>>((resolve) => {
-        //     setTimeout(() => {
-        //         const title = findTitle(titleId);
-        //         if (title) {
-        //             title.status = status;
-        //             resolve({
-        //                 success: true,
-        //                 data: deepCopy(title),
-        //             });
-        //         } else {
-        //             resolve({
-        //                 success: false,
-        //             });
-        //         }
-        //     }, 3000);
-        // }).then(updateExistingTitle);
-    }
-
-    async function changeTitleName(titleId: string, name: string) {
-        // return new Promise<ApiResponse<Title>>((resolve) => {
-        //     setTimeout(() => {
-        //         const title = findTitle(titleId);
-        //         if (title) {
-        //             title.name = name;
-        //             resolve({
-        //                 success: true,
-        //                 data: deepCopy(title),
-        //             });
-        //         } else {
-        //             resolve({
-        //                 success: false,
-        //             });
-        //         }
-        //     }, 2000);
-        // }).then(updateExistingTitle);
-    }
-
-    async function changeTitleDescription(
-        titleId: string,
-        description: string
-    ) {
-        // return new Promise<ApiResponse<Title>>((resolve) => {
-        //     setTimeout(() => {
-        //         const title = findTitle(titleId);
-        //         if (title) {
-        //             title.description = description;
-        //             resolve({
-        //                 success: true,
-        //                 data: deepCopy(title),
-        //             });
-        //         } else {
-        //             resolve({
-        //                 success: false,
-        //             });
-        //         }
-        //     }, 2000);
-        // }).then(updateExistingTitle);
-    }
-
-    async function changeTitlePoster(titleId: string, poster: TitlePoster) {
-        // const title = findTitle(titleId);
-        // if (title && "imgFileBase64" in poster && poster.imgFileBase64) {
-        //     if (title?.poster?.img) {
-        //         URL.revokeObjectURL(title.poster.img);
-        //     }
-        //     const blob = await fetch(poster.imgFileBase64).then((res) =>
-        //         res.blob()
-        //     );
-        //     poster.img = URL.createObjectURL(blob);
-        //     delete poster.imgFileBase64;
-        //     return new Promise<ApiResponse<Title>>((resolve) => {
-        //         setTimeout(() => {
-        //             title.poster = poster;
-        //             resolve({
-        //                 success: true,
-        //                 data: deepCopy(title),
-        //             });
-        //         }, 2000);
-        //     }).then(updateExistingTitle);
-        // }
-        // if (title) {
-        //     return new Promise<ApiResponse<Title>>((resolve) => {
-        //         setTimeout(() => {
-        //             title.poster = poster;
-        //             resolve({
-        //                 success: true,
-        //                 data: deepCopy(title),
-        //             });
-        //         }, 2000);
-        //     }).then(updateExistingTitle);
-        // }
-        // return new Promise<ApiResponse<Title>>((resolve) => {
-        //     setTimeout(() => {
-        //         resolve({
-        //             success: false,
-        //         });
-        //     }, 2000);
-        // });
+    async function removeTag(title: Title, tag: Tag) {
+        const tags = title.tags.filter((item) => item.uuid !== tag.uuid);
+        const reqTitle = { ...title, tags };
+        return updateTitle(reqTitle);
     }
 
     return {
         titles: titlesComputed,
         pages: pagesComputed,
-        fetchTitles,
-        fetchPagesAmount,
         addTitle,
         deleteTitle,
-        changeTitleName,
-        changeTitleDescription,
-        changeTitlePoster,
-        changeTitleStatus,
-        rateTitle,
+        fetchTitles,
+        fetchPagesAmount,
+        updateTitle,
         addTag,
         removeTag,
     };
 });
+
+// changeTitleName,
+// changeTitleDescription,
+// changeTitlePoster,
+// changeTitleStatus,
+// rateTitle,
+// addTag
+// removeTag

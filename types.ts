@@ -1,3 +1,10 @@
+type ExpandRecursively<T> = T extends object
+    ? T extends infer O
+        ? { [K in keyof O]: ExpandRecursively<O[K]> }
+        : never
+    : T;
+
+type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 type DeepCopy<T> = T extends string | number | boolean | null
     ? T
     : T extends (infer U)[]
@@ -12,6 +19,7 @@ type TitleStatus = TitleStatuses[keyof TitleStatuses];
 
 type Tag = {
     id: string;
+    uuid: string;
     color: Color;
     text: string;
 };
@@ -33,6 +41,7 @@ type TitlePoster = {
 };
 
 type Title = {
+    id: string;
     uuid: string;
     name: string;
     description: string;
@@ -41,8 +50,18 @@ type Title = {
     poster?: TitlePoster;
     tags: Tag[];
 };
-type TitlePartial = Omit<Title, "id">;
+type TitlePartial = PartialBy<Title, "uuid" | "id">;
 
+type TitleServerBase = {
+    uuid: string;
+    id: string;
+    name: string;
+    description: string;
+    status: TitleStatus;
+    rating?: number;
+    link?: string;
+    tags: Tag[];
+};
 type TitleServer = {
     uuid: string;
     id: string;
@@ -50,10 +69,22 @@ type TitleServer = {
     description: string;
     status: TitleStatus;
     rating?: number;
-    img?: string;
     link?: string;
-    pos_x: number;
-    pos_y: number;
+    img?: string;
+    pos_x?: number;
+    pos_y?: number;
     tags: Tag[];
 };
-type TitleServerPartial = Omit<TitleServer, "uuid" | "id" | "pos_x" | "pos_y">;
+// type TitleServer =
+//     | TitleServerBase
+//     | (TitleServerBase & {
+//           img: string;
+//           pos_x: number;
+//           pos_y: number;
+//       });
+
+type TitleServerPartial = PartialBy<TitleServer, "id" | "uuid">;
+// type TitleServerPartial = PartialBy<
+//     TitleServer,
+//     "pos_x" | "pos_y" | "uuid" | "id"
+// >;

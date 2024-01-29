@@ -1,7 +1,7 @@
-import { addTitle } from "~/server/services/titles.server";
+import { updateTitle } from "~/server/services/titles.server";
 
 export default defineEventHandler(async (event) => {
-    const title: TitleServerPartial = await readBody(event);
+    const title: TitleServer = await readBody(event);
 
     const errorArgs = [
         event,
@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
         "Ошибка при обращении к базе данных",
     ] as const;
 
-    const [data, error] = await handleAsync(addTitle(title));
+    const [data, error] = await handleAsync(updateTitle(title));
     if (error) {
         setResponseStatus(...errorArgs);
         return;
