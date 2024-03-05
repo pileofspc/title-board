@@ -18,12 +18,12 @@ type TitleStatuses = import("~/constants").TitleStatuses;
 type TitleStatus = TitleStatuses[keyof TitleStatuses];
 
 type Tag = {
-    id: string;
+    title_uuid: string;
     uuid: string;
     color: Color;
     text: string;
 };
-type TagPartial = Omit<Tag, "id">;
+type TagPartial = Omit<Tag, "uuid" | "title_uuid">;
 
 // TODO:
 // Переделать типы более осознанно и синхронизировать с бэковыми
@@ -88,3 +88,10 @@ type TitleServerPartial = PartialBy<TitleServer, "id" | "uuid">;
 //     TitleServer,
 //     "pos_x" | "pos_y" | "uuid" | "id"
 // >;
+
+type QQuery = {
+    text: string;
+    values: (string | number)[];
+};
+
+type CustomQuery = [string, (string | number)[]];

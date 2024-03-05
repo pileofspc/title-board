@@ -1,3 +1,4 @@
+import { Query } from "pg";
 import { query } from "~/server/utils/db.server";
 
 const defaultTitle = {
@@ -8,6 +9,8 @@ const defaultTitle = {
     pos_y: 50,
     tags: [],
 };
+
+const MAX_TAGS = 5;
 
 export async function updateTitle(title: TitleServer): Promise<TitleServer[]> {
     return (
@@ -41,7 +44,7 @@ export async function updateTitle(title: TitleServer): Promise<TitleServer[]> {
 
 export async function addTitle(
     title: TitleServerPartial
-): Promise<TitleServer[]> {
+): Promise<TitleServer> {
     return (
         await query(
             "INSERT INTO titles(name, description, rating, img, link, pos_x, pos_y, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
@@ -59,8 +62,15 @@ export async function addTitle(
     ).rows[0];
 }
 
-export async function deleteTitle(titleId: string): Promise<TitleServer[]> {
-    return (await query("DELETE FROM titles WHERE uuid = $1", [titleId])).rows;
+export async function deleteTitle(titleUUID: string): Promise<TitleServer[]> {
+    // await query("DELETE FROM tags WHERE title_uuid = $1", [titleUUID]);
+    return (
+        await query(
+            `DELETE FROM titles WHERE uuid = $1;
+            DELETE FROM tags WHERE title_uuid = $1`,
+            [titleUUID]
+        )
+    ).rows;
 }
 
 export async function getTitlesTotal(): Promise<number> {
@@ -80,10 +90,72 @@ export async function getTitles(
     perpage: number,
     offset: number
 ): Promise<TitleServer[]> {
-    return (
+    // "SELECT * FROM titles LEFT JOIN tags ON titles.uuid = tags.title_uuid ORDER BY titles.id DESC LIMIT $1 OFFSET $2",
+    const result: TitleServer[] = (
         await query(
-            "SELECT * FROM titles ORDER BY id DESC LIMIT $1 OFFSET $2",
+            `SELECT titles.*, json_agg(tags.*) AS tags FROM titles
+            LEFT JOIN tags ON titles.uuid = tags.title_uuid
+            GROUP BY titles.uuid
+            ORDER BY titles.id DESC LIMIT $1 OFFSET $2
+        `,
             [perpage, offset]
         )
     ).rows;
+
+    for (const title of result) {
+        title.tags
+            ? (title.tags = title.tags.filter((tag) => tag))
+            : (title.tags = []);
+    }
+    return result;
+}
+
+export async function getTagsOfTitle(titleUUID: string): Promise<Tag[]> {
+    return (
+        await query(
+            `SELECT * FROM tags
+        WHERE title_uuid = $1
+        ORDER BY created_at, id DESC`,
+            [titleUUID]
+        )
+    ).rows;
+}
+
+function constructAddTagQuery(
+    tags: TagPartial[],
+    titleUUID: string
+): CustomQuery {
+    let counter = 1;
+    let text = "INSERT INTO tags(text, color, title_uuid) VALUES";
+    tags.forEach((tag, index) => {
+        if (index > 0) {
+            text += ", ";
+        }
+        text += `($${counter++}, $${counter++}, $${counter++})`;
+    });
+    text += " RETURNING *";
+
+    const values = tags.reduce((acc: string[], value) => {
+        acc.push(value.text, value.color, titleUUID);
+        return acc;
+    }, []);
+
+    return [text, values];
+}
+
+export async function addTags(
+    tags: TagPartial[],
+    titleUUID: string
+): Promise<Tag[]> {
+    if (tags.length === 0) {
+        return await getTagsOfTitle(titleUUID);
+    }
+    const tagsAmount = (await getTagsOfTitle(titleUUID)).length;
+    if (tagsAmount > MAX_TAGS) {
+        throw new Error("Невозможно присвоить тайтлу больше 5 тегов!");
+    }
+
+    const constructedQuery = constructAddTagQuery(tags, titleUUID);
+
+    return (await query(...constructedQuery)).rows;
 }

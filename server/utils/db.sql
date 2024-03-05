@@ -1,1 +1,0 @@
--- INSERT INTO titles(name, description, status) VALUES('PRIVET', 'asdfdagdfsghdfshdsfh', 'NOT_WATCHED')

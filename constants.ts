@@ -30,7 +30,7 @@ export const apiEndpoints = {
     titles: "http://localhost:3000/api/titles",
 } as const;
 
-const mockTitle: Title = {
+export const mockTitle: Title = {
     id: "5",
     uuid: "86ec4dfb-7b8a-41cd-a7c4-32c67404a260",
     name: "asd",

@@ -1,19 +1,26 @@
-import { addTitle } from "~/server/services/titles.server";
+import { addTags, addTitle } from "~/server/services/titles.server";
 
 export default defineEventHandler(async (event) => {
     const title: TitleServerPartial = await readBody(event);
 
-    const errorArgs = [
-        event,
-        500,
-        "Ошибка при обращении к базе данных",
-    ] as const;
+    function respondWithError() {
+        setResponseStatus(event, 500, "Ошибка при обращении к базе данных");
+    }
 
-    const [data, error] = await handleAsync(addTitle(title));
-    if (error) {
-        setResponseStatus(...errorArgs);
+    const [responseTitle, errorTitle] = await handleAsync(addTitle(title));
+    if (errorTitle) {
+        respondWithError();
+        return;
+    }
+    const [responseTags, errorTags] = await handleAsync(
+        addTags(title.tags, responseTitle.uuid)
+    );
+    if (errorTags) {
+        respondWithError();
         return;
     }
 
-    return data;
+    responseTitle.tags = responseTags;
+
+    return responseTitle;
 });

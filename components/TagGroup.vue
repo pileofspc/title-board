@@ -3,7 +3,7 @@
         <TransitionGroup @before-leave="beforeLeave" @after-leave="afterLeave">
             <VChip
                 v-for="tag in props.tags"
-                :key="tag.id"
+                :key="tag.uuid"
                 variant="elevated"
                 :color="tag.color"
                 class="tag-group__tag transition"

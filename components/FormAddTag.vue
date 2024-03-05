@@ -90,7 +90,7 @@
             return;
         }
         emit("addTag", {
-            id: v4(),
+            uuid: v4(),
             color: selectedColor.value,
             text: tagText.value,
         });

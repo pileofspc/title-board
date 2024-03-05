@@ -11,16 +11,14 @@ export default defineEventHandler(async (event) => {
     // const filter = query.filter;
     // const sort = query.sort;
 
-    const errorArgs = [
-        event,
-        500,
-        "Ошибка при обращении к базе данных",
-    ] as const;
+    function respondWithError() {
+        setResponseStatus(event, 500, "Ошибка при обращении к базе данных");
+    }
 
     if (query.total) {
         const [data, error] = await handleAsync(getTitlesTotal());
         if (error) {
-            setResponseStatus(...errorArgs);
+            respondWithError();
             return 0;
         }
 
@@ -32,7 +30,7 @@ export default defineEventHandler(async (event) => {
             getTitles(perpage, page * perpage)
         );
         if (error) {
-            setResponseStatus(...errorArgs);
+            respondWithError();
             return [];
         }
 
@@ -41,7 +39,7 @@ export default defineEventHandler(async (event) => {
 
     const [data, error] = await handleAsync(getAllTitles());
     if (error) {
-        setResponseStatus(...errorArgs);
+        respondWithError();
         return [];
     }
 
