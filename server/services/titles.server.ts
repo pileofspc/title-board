@@ -1,5 +1,4 @@
-import { Query } from "pg";
-import { query } from "~/server/utils/db.server";
+import { v4 as uuidv4 } from "uuid";
 
 const defaultTitle = {
     name: "Новый тайтл",
@@ -12,9 +11,49 @@ const defaultTitle = {
 
 const MAX_TAGS = 5;
 
-export async function updateTitle(title: TitleServer): Promise<TitleServer[]> {
-    return (
-        await query(
+const construct = {
+    getTitles: function (perpage: number, offset: number): CustomQuery {
+        return [
+            `SELECT titles.*, json_agg(tags.*) AS tags FROM titles
+            LEFT JOIN tags ON titles.uuid = tags.title_uuid
+            GROUP BY titles.uuid
+            ORDER BY titles.id DESC LIMIT $1 OFFSET $2`,
+            [perpage, offset],
+        ];
+    },
+    getAllTitles: function (): CustomQuery {
+        return [
+            `SELECT * FROM titles
+            LEFT JOIN tags ON titles.uuid = tags.title_uuid
+            ORDER BY titles.id DESC`,
+        ];
+    },
+    getTitlesCount: function (): CustomQuery {
+        return ["SELECT COUNT(*) FROM titles"];
+    },
+    postTitle: function (
+        title: TitleServerPartial,
+        titleUUID?: string
+    ): CustomQuery {
+        return [
+            `INSERT INTO titles(uuid, name, description, rating, img, link, pos_x, pos_y, status)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            RETURNING *`,
+            [
+                title.uuid || titleUUID,
+                title.name || defaultTitle.name,
+                title.description || defaultTitle.description,
+                title.rating,
+                title.img,
+                title.link,
+                title.pos_x || defaultTitle.pos_x,
+                title.pos_y || defaultTitle.pos_y,
+                title.status || defaultTitle.status,
+            ],
+        ];
+    },
+    updateTitle: function (title: TitleServer): CustomQuery {
+        return [
             `UPDATE titles
             SET name = $2,
                 description = $3,
@@ -26,7 +65,7 @@ export async function updateTitle(title: TitleServer): Promise<TitleServer[]> {
                 status = $9
             WHERE uuid = $1
             RETURNING *
-        `,
+            `,
             [
                 title.uuid,
                 title.name || defaultTitle.name,
@@ -37,70 +76,88 @@ export async function updateTitle(title: TitleServer): Promise<TitleServer[]> {
                 title.pos_x || defaultTitle.pos_x,
                 title.pos_y || defaultTitle.pos_y,
                 title.status || defaultTitle.status,
-            ]
-        )
-    ).rows[0];
-}
+            ],
+        ];
+    },
+    deleteTitle: function (titleUUID: string): CustomQuery {
+        return ["DELETE FROM titles WHERE uuid = $1", [titleUUID]];
+    },
 
-export async function addTitle(
+    getTags: function (titleUUID: string): CustomQuery {
+        return [
+            `SELECT * FROM tags
+            WHERE title_uuid = $1
+            ORDER BY created_at, id DESC`,
+            [titleUUID],
+        ];
+    },
+    getTagsCount: function (titleUUID: string): CustomQuery {
+        return [
+            `SELECT COUNT(*) FROM tags
+            WHERE title_uuid = $1`,
+            [titleUUID],
+        ];
+    },
+    postTags: function (tags: TagPartial[], titleUUID: string): CustomQuery {
+        let counter = 1;
+        let text = "INSERT INTO tags(text, color, title_uuid) VALUES";
+        tags.forEach((tag, index) => {
+            if (index > 0) {
+                text += ", ";
+            }
+            text += `($${counter++}, $${counter++}, $${counter++})`;
+        });
+        text += " RETURNING *";
+
+        const values = tags.reduce((acc: string[], value) => {
+            acc.push(value.text, value.color, titleUUID);
+            return acc;
+        }, []);
+
+        return [text, values];
+    },
+    deleteTags: function (titleUUID: string): CustomQuery {
+        return ["DELETE FROM tags WHERE title_uuid = $1", [titleUUID]];
+    },
+    // updateTags не нужен, потому что это по сути будет две команды DELETE, а затем INSERT, которые уже есть в объекте
+};
+
+export async function postTitle(
     title: TitleServerPartial
 ): Promise<TitleServer> {
-    return (
-        await query(
-            "INSERT INTO titles(name, description, rating, img, link, pos_x, pos_y, status) VALUES($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *",
-            [
-                title.name || defaultTitle.name,
-                title.description || defaultTitle.description,
-                title.rating,
-                title.img,
-                title.link,
-                title.pos_x || defaultTitle.pos_x,
-                title.pos_y || defaultTitle.pos_y,
-                title.status || defaultTitle.status,
-            ]
-        )
-    ).rows[0];
-}
+    const uuid = uuidv4();
 
-export async function deleteTitle(titleUUID: string): Promise<TitleServer[]> {
-    // await query("DELETE FROM tags WHERE title_uuid = $1", [titleUUID]);
-    return (
-        await query(
-            `DELETE FROM titles WHERE uuid = $1;
-            DELETE FROM tags WHERE title_uuid = $1`,
-            [titleUUID]
-        )
-    ).rows;
-}
+    // TODO: обработать случай, когда тегов больше MAX_TAGS
 
-export async function getTitlesTotal(): Promise<number> {
-    // Код для определения ПРИМЕРНОГО количества записей
-    // return (
-    //     await query(
-    //         "SELECT reltuples FROM pg_class WHERE oid = 'public.titles'::regclass;"
-    //     )
-    // )?.rows[0]?.reltuples;
-    return (await query("SELECT COUNT(*) FROM titles"))?.rows[0].count;
-}
+    if (title.tags.length === 0) {
+        return (await query(construct.postTitle(title, uuid)))[0];
+    }
 
-export async function getAllTitles(): Promise<TitleServer[]> {
-    return (await query("SELECT * FROM titles ORDER BY id DESC")).rows;
+    const results = await queryTransaction([
+        construct.postTitle(title, uuid),
+        construct.postTags(title.tags, uuid),
+    ]);
+    const titleResult: TitleServer = results[0][0];
+    const tagsResult: Tag[] = results[1];
+    titleResult.tags = tagsResult;
+    return titleResult;
+}
+export async function updateTitle(title: TitleServer): Promise<TitleServer[]> {
+    return (await query(construct.updateTitle(title)))[0];
+}
+export async function deleteTitle(titleUUID: string): Promise<void> {
+    return void (await queryTransaction([
+        construct.deleteTitle(titleUUID),
+        construct.deleteTags(titleUUID),
+    ]));
 }
 export async function getTitles(
     perpage: number,
     offset: number
 ): Promise<TitleServer[]> {
-    // "SELECT * FROM titles LEFT JOIN tags ON titles.uuid = tags.title_uuid ORDER BY titles.id DESC LIMIT $1 OFFSET $2",
-    const result: TitleServer[] = (
-        await query(
-            `SELECT titles.*, json_agg(tags.*) AS tags FROM titles
-            LEFT JOIN tags ON titles.uuid = tags.title_uuid
-            GROUP BY titles.uuid
-            ORDER BY titles.id DESC LIMIT $1 OFFSET $2
-        `,
-            [perpage, offset]
-        )
-    ).rows;
+    const result: TitleServer[] = await query(
+        construct.getTitles(perpage, offset)
+    );
 
     for (const title of result) {
         title.tags
@@ -109,53 +166,27 @@ export async function getTitles(
     }
     return result;
 }
-
-export async function getTagsOfTitle(titleUUID: string): Promise<Tag[]> {
-    return (
-        await query(
-            `SELECT * FROM tags
-        WHERE title_uuid = $1
-        ORDER BY created_at, id DESC`,
-            [titleUUID]
-        )
-    ).rows;
+export async function getAllTitles(): Promise<TitleServer[]> {
+    return await query(construct.getAllTitles());
+}
+export async function getTitlesCount(): Promise<number> {
+    return (await query(construct.getTitlesCount()))[0].count;
 }
 
-function constructAddTagQuery(
-    tags: TagPartial[],
-    titleUUID: string
-): CustomQuery {
-    let counter = 1;
-    let text = "INSERT INTO tags(text, color, title_uuid) VALUES";
-    tags.forEach((tag, index) => {
-        if (index > 0) {
-            text += ", ";
-        }
-        text += `($${counter++}, $${counter++}, $${counter++})`;
-    });
-    text += " RETURNING *";
-
-    const values = tags.reduce((acc: string[], value) => {
-        acc.push(value.text, value.color, titleUUID);
-        return acc;
-    }, []);
-
-    return [text, values];
-}
-
-export async function addTags(
+export async function updateTags(
     tags: TagPartial[],
     titleUUID: string
 ): Promise<Tag[]> {
+    // TODO: обработать случай, когда тегов больше MAX_TAGS
+
     if (tags.length === 0) {
-        return await getTagsOfTitle(titleUUID);
-    }
-    const tagsAmount = (await getTagsOfTitle(titleUUID)).length;
-    if (tagsAmount > MAX_TAGS) {
-        throw new Error("Невозможно присвоить тайтлу больше 5 тегов!");
+        return await query(construct.deleteTags(titleUUID));
     }
 
-    const constructedQuery = constructAddTagQuery(tags, titleUUID);
+    const results = await queryTransaction([
+        construct.deleteTags(titleUUID),
+        construct.postTags(tags, titleUUID),
+    ]);
 
-    return (await query(...constructedQuery)).rows;
+    return results[1];
 }

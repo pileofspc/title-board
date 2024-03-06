@@ -94,4 +94,6 @@ type QQuery = {
     values: (string | number)[];
 };
 
-type CustomQuery = [string, (string | number)[]];
+type CustomQuery =
+    | [text: string, values: (string | number | null | undefined)[]]
+    | [text: string];

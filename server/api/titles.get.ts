@@ -1,7 +1,7 @@
 import {
     getTitles,
     getAllTitles,
-    getTitlesTotal,
+    getTitlesCount,
 } from "~/server/services/titles.server";
 
 export default defineEventHandler(async (event) => {
@@ -11,14 +11,10 @@ export default defineEventHandler(async (event) => {
     // const filter = query.filter;
     // const sort = query.sort;
 
-    function respondWithError() {
-        setResponseStatus(event, 500, "Ошибка при обращении к базе данных");
-    }
-
     if (query.total) {
-        const [data, error] = await handleAsync(getTitlesTotal());
+        const [data, error] = await handleAsync(getTitlesCount());
         if (error) {
-            respondWithError();
+            respondWithError(event);
             return 0;
         }
 
@@ -30,7 +26,7 @@ export default defineEventHandler(async (event) => {
             getTitles(perpage, page * perpage)
         );
         if (error) {
-            respondWithError();
+            respondWithError(event);
             return [];
         }
 
@@ -39,7 +35,7 @@ export default defineEventHandler(async (event) => {
 
     const [data, error] = await handleAsync(getAllTitles());
     if (error) {
-        respondWithError();
+        respondWithError(event);
         return [];
     }
 
