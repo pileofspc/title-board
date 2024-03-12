@@ -39,7 +39,9 @@ export const useTitlesStore = defineStore("titles", () => {
         });
     }
 
-    function mapToServerPartial(titles: Title[]): TitleServerPartial[] {
+    function mapToServerPartial(
+        titles: Title[] | TitlePartial[]
+    ): TitleServerPartial[] {
         return titles.map((item) => {
             return {
                 id: item.id,
@@ -93,7 +95,7 @@ export const useTitlesStore = defineStore("titles", () => {
         titles.value = mapToClient(response.data.value);
     }
 
-    async function addTitle(title: Title) {
+    async function addTitle(title: TitlePartial) {
         const mappedTitle = mapToServerPartial([title])[0];
         const url = new URL(apiEndpoints.titles);
 

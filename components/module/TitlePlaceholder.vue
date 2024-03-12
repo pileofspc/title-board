@@ -18,7 +18,6 @@
 </template>
 
 <script setup lang="ts">
-    import { v4 } from "uuid";
     import { titleStatuses } from "~/constants";
 
     // TODO: этого эмита быть не должно: он нужен только потому,
@@ -30,8 +29,7 @@
     const globalStore = useGlobalStore();
 
     // TODO: Тут не должно быть айдишника, т.к он присваивается в базе
-    const title = ref<Title>({
-        uuid: v4(),
+    const title = ref<TitlePartial>({
         name: "Новый тайтл",
         description: "Новое описание",
         rating: 0,
@@ -64,7 +62,7 @@
     function onPosterChange(poster: TitlePoster) {
         title.value.poster = poster;
     }
-    async function onConfirmAddingTitle(title: Title) {
+    async function onConfirmAddingTitle(title: TitlePartial) {
         loading.value = true;
         await titlesStore.addTitle(title);
         loading.value = false;

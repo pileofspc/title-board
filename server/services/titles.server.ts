@@ -33,14 +33,14 @@ const construct = {
     },
     postTitle: function (
         title: TitleServerPartial,
-        titleUUID?: string
+        titleUUID: string
     ): CustomQuery {
         return [
             `INSERT INTO titles(uuid, name, description, rating, img, link, pos_x, pos_y, status)
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *`,
             [
-                title.uuid || titleUUID,
+                titleUUID,
                 title.name || defaultTitle.name,
                 title.description || defaultTitle.description,
                 title.rating,
@@ -99,6 +99,10 @@ const construct = {
         ];
     },
     postTags: function (tags: TagPartial[], titleUUID: string): CustomQuery {
+        if (tags.length === 0 || tags.length > MAX_TAGS) {
+            throw new Error("Невозможно добавить больше 5 тегов одновременно");
+        }
+
         let counter = 1;
         let text = "INSERT INTO tags(text, color, title_uuid) VALUES";
         tags.forEach((tag, index) => {
@@ -127,8 +131,6 @@ export async function postTitle(
 ): Promise<TitleServer> {
     const uuid = uuidv4();
 
-    // TODO: обработать случай, когда тегов больше MAX_TAGS
-
     if (title.tags.length === 0) {
         return (await query(construct.postTitle(title, uuid)))[0];
     }
@@ -146,10 +148,7 @@ export async function updateTitle(title: TitleServer): Promise<TitleServer[]> {
     return (await query(construct.updateTitle(title)))[0];
 }
 export async function deleteTitle(titleUUID: string): Promise<void> {
-    return void (await queryTransaction([
-        construct.deleteTitle(titleUUID),
-        construct.deleteTags(titleUUID),
-    ]));
+    return void (await query(construct.deleteTitle(titleUUID)));
 }
 export async function getTitles(
     perpage: number,
@@ -177,8 +176,6 @@ export async function updateTags(
     tags: TagPartial[],
     titleUUID: string
 ): Promise<Tag[]> {
-    // TODO: обработать случай, когда тегов больше MAX_TAGS
-
     if (tags.length === 0) {
         return await query(construct.deleteTags(titleUUID));
     }

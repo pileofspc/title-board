@@ -114,7 +114,7 @@
     import { statuses } from "~/constants";
 
     const props = defineProps<{
-        title: Title;
+        title: TitlePartial;
         loading?: boolean;
         isPlaceholder?: boolean;
     }>();
@@ -126,9 +126,9 @@
         addTag: [tag: Tag];
         removeTag: [tag: Tag];
         posterChange: [poster: TitlePoster];
-        removeTitle: [title: Title];
-        confirm: [title: Title];
-        cancel: [title: Title];
+        removeTitle: [title: TitlePartial];
+        confirm: [title: TitlePartial];
+        cancel: [title: TitlePartial];
     }>();
 
     const isEditingName = ref(false);

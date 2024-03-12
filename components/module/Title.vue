@@ -15,8 +15,6 @@
 </template>
 
 <script setup lang="ts">
-    import { v4 } from "uuid";
-
     const props = defineProps<{
         title: Title;
     }>();
