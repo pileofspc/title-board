@@ -9,7 +9,10 @@ const pool = new pg.Pool({
 });
 
 export async function query(query: CustomQuery) {
-    return (await pool.query(query[0], query[1])).rows;
+    if (query.skip) {
+        throw new Error("Невозможно выполнить пустой запрос");
+    }
+    return (await pool.query(query.text, query.values)).rows;
 }
 
 export async function queryTransaction(subqueries: CustomQuery[]) {
@@ -18,7 +21,11 @@ export async function queryTransaction(subqueries: CustomQuery[]) {
         await client.query("BEGIN");
         const results = [];
         for (const query of subqueries) {
-            results.push((await client.query(query[0], query[1])).rows);
+            if (query.skip) {
+                results.push(null);
+                continue;
+            }
+            results.push((await client.query(query.text, query.values)).rows);
         }
         await client.query("COMMIT");
         return results;
@@ -29,48 +36,3 @@ export async function queryTransaction(subqueries: CustomQuery[]) {
         client.release();
     }
 }
-
-// 1) getting a client
-// 2) constructing a query
-// 3) deciding what to return from that query
-// 4) sending a query
-
-// queryTransaction3(() => {
-//     addTitle(title);
-//     addTags(tags, title.uuid)
-// })
-
-// export async function queryTransaction2(
-//     callback: (client: pg.PoolClient) => Promise<void>
-// ) {
-//     const client = await pool.connect();
-//     try {
-//         await client.query("BEGIN");
-//         const results = [];
-
-//         await callback(client);
-
-//         await client.query("COMMIT");
-//         return results;
-//     } catch (error) {
-//         await client.query("ROLLBACK");
-//         throw error;
-//     } finally {
-//         client.release();
-//     }
-// }
-
-// export async function queryTransaction(subqueries: CustomQuery[]) {
-//     return pool.connect().then((client) => {
-//         return client
-//             .query("BEGIN")
-//             .then(() =>
-//                 Promise.all(
-//                     subqueries.map((query) => client.query(query[0], query[1]))
-//                 )
-//             )
-//             .then(() => client.query("COMMIT"))
-//             .catch((e) => client.query("ROLLBACK"))
-//             .finally(() => client.release());
-//     });
-// }

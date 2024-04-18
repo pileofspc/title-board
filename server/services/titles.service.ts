@@ -13,33 +13,42 @@ const MAX_TAGS = 5;
 
 const construct = {
     getTitles: function (perpage: number, offset: number): CustomQuery {
-        return [
-            `SELECT titles.*, json_agg(tags.*) AS tags FROM titles
+        return {
+            text: `SELECT titles.*, json_agg(tags.*) AS tags FROM titles
             LEFT JOIN tags ON titles.uuid = tags.title_uuid
             GROUP BY titles.uuid
             ORDER BY titles.id DESC LIMIT $1 OFFSET $2`,
-            [perpage, offset],
-        ];
+            values: [perpage, offset],
+        };
     },
     getAllTitles: function (): CustomQuery {
-        return [
-            `SELECT * FROM titles
+        return {
+            //text: `SELECT titles.*, CASE WHEN COUNT(tags) = 0 THEN '[]' ELSE json_agg(tags.*) END AS tags FROM titles
+            text: `SELECT titles.*, COALESCE(json_agg(tags.*) FILTER(WHERE tags.title_uuid IS NOT NULL), '[]') AS tags FROM titles
+            LEFT JOIN tags ON titles.uuid = tags.title_uuid
+            GROUP BY titles.uuid
+            ORDER BY titles.id DESC`,
+        };
+    },
+    getAllTitlesWithoutTags: function (): CustomQuery {
+        return {
+            text: `SELECT * FROM titles
             LEFT JOIN tags ON titles.uuid = tags.title_uuid
             ORDER BY titles.id DESC`,
-        ];
+        };
     },
     getTitlesCount: function (): CustomQuery {
-        return ["SELECT COUNT(*) FROM titles"];
+        return { text: "SELECT COUNT(*) FROM titles" };
     },
     postTitle: function (
         title: TitleServerPartial,
         titleUUID: string
     ): CustomQuery {
-        return [
-            `INSERT INTO titles(uuid, name, description, rating, img, link, pos_x, pos_y, status)
+        return {
+            text: `INSERT INTO titles(uuid, name, description, rating, img, link, pos_x, pos_y, status)
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *`,
-            [
+            values: [
                 titleUUID,
                 title.name || defaultTitle.name,
                 title.description || defaultTitle.description,
@@ -50,11 +59,11 @@ const construct = {
                 title.pos_y || defaultTitle.pos_y,
                 title.status || defaultTitle.status,
             ],
-        ];
+        };
     },
     updateTitle: function (title: TitleServer): CustomQuery {
-        return [
-            `UPDATE titles
+        return {
+            text: `UPDATE titles
             SET name = $2,
                 description = $3,
                 rating = $4,
@@ -66,7 +75,7 @@ const construct = {
             WHERE uuid = $1
             RETURNING *
             `,
-            [
+            values: [
                 title.uuid,
                 title.name || defaultTitle.name,
                 title.description || defaultTitle.description,
@@ -77,29 +86,35 @@ const construct = {
                 title.pos_y || defaultTitle.pos_y,
                 title.status || defaultTitle.status,
             ],
-        ];
+        };
     },
     deleteTitle: function (titleUUID: string): CustomQuery {
-        return ["DELETE FROM titles WHERE uuid = $1", [titleUUID]];
+        return {
+            text: "DELETE FROM titles WHERE uuid = $1",
+            values: [titleUUID],
+        };
     },
 
     getTags: function (titleUUID: string): CustomQuery {
-        return [
-            `SELECT * FROM tags
+        return {
+            text: `SELECT * FROM tags
             WHERE title_uuid = $1
             ORDER BY created_at, id DESC`,
-            [titleUUID],
-        ];
+            values: [titleUUID],
+        };
     },
     getTagsCount: function (titleUUID: string): CustomQuery {
-        return [
-            `SELECT COUNT(*) FROM tags
+        return {
+            text: `SELECT COUNT(*) FROM tags
             WHERE title_uuid = $1`,
-            [titleUUID],
-        ];
+            values: [titleUUID],
+        };
     },
     postTags: function (tags: TagPartial[], titleUUID: string): CustomQuery {
-        if (tags.length === 0 || tags.length > MAX_TAGS) {
+        if (tags.length === 0) {
+            return { skip: true };
+        }
+        if (tags.length > MAX_TAGS) {
             throw new Error("Невозможно добавить больше 5 тегов одновременно");
         }
 
@@ -118,10 +133,13 @@ const construct = {
             return acc;
         }, []);
 
-        return [text, values];
+        return { text, values };
     },
     deleteTags: function (titleUUID: string): CustomQuery {
-        return ["DELETE FROM tags WHERE title_uuid = $1", [titleUUID]];
+        return {
+            text: "DELETE FROM tags WHERE title_uuid = $1",
+            values: [titleUUID],
+        };
     },
     // updateTags не нужен, потому что это по сути будет две команды DELETE, а затем INSERT, которые уже есть в объекте
 };
@@ -139,13 +157,22 @@ export async function postTitle(
         construct.postTitle(title, uuid),
         construct.postTags(title.tags, uuid),
     ]);
-    const titleResult: TitleServer = results[0][0];
-    const tagsResult: Tag[] = results[1];
+    const titleResult: TitleServer = results[0]?.[0];
+    const tagsResult: Tag[] = results[1] || [];
     titleResult.tags = tagsResult;
     return titleResult;
 }
-export async function updateTitle(title: TitleServer): Promise<TitleServer[]> {
-    return (await query(construct.updateTitle(title)))[0];
+export async function updateTitle(title: TitleServer): Promise<TitleServer> {
+    const results = await queryTransaction([
+        construct.updateTitle(title),
+        construct.deleteTags(title.uuid),
+        construct.postTags(title.tags, title.uuid),
+    ]);
+
+    const titleResult: TitleServer = results[0]?.[0];
+    const tagsResult: Tag[] = results[2] || [];
+    titleResult.tags = tagsResult;
+    return titleResult;
 }
 export async function deleteTitle(titleUUID: string): Promise<void> {
     return void (await query(construct.deleteTitle(titleUUID)));
@@ -172,18 +199,5 @@ export async function getTitlesCount(): Promise<number> {
     return (await query(construct.getTitlesCount()))[0].count;
 }
 
-export async function updateTags(
-    tags: TagPartial[],
-    titleUUID: string
-): Promise<Tag[]> {
-    if (tags.length === 0) {
-        return await query(construct.deleteTags(titleUUID));
-    }
-
-    const results = await queryTransaction([
-        construct.deleteTags(titleUUID),
-        construct.postTags(tags, titleUUID),
-    ]);
-
-    return results[1];
-}
+// TODO: Сделать так, чтобы хотя бы теги (а может быть и тайтлы тоже) не перезаписывались полностью
+// На данный момент получается слишком много перезаписей, в том числе uuid, из-за чего на фронте неправильные анимации, так как там uuid используется в качестве ключа

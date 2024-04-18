@@ -97,11 +97,14 @@ type TitleServerPartial = PartialBy<TitleServer, "id" | "uuid">;
 //     "pos_x" | "pos_y" | "uuid" | "id"
 // >;
 
-type QQuery = {
-    text: string;
-    values: (string | number)[];
-};
-
 type CustomQuery =
-    | [text: string, values: (string | number | null | undefined)[]]
-    | [text: string];
+    | {
+          text: string;
+          values?: (string | number | null | undefined)[];
+          skip?: false | null | undefined;
+      }
+    | {
+          text?: string;
+          values?: (string | number | null | undefined)[];
+          skip: true;
+      };

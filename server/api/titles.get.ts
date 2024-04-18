@@ -2,7 +2,7 @@ import {
     getTitles,
     getAllTitles,
     getTitlesCount,
-} from "~/server/services/titles.server";
+} from "~/server/services/titles.service";
 
 export default defineEventHandler(async (event) => {
     const query = getQuery(event);
@@ -10,6 +10,8 @@ export default defineEventHandler(async (event) => {
     const perpage = Number(query.perpage) || 10;
     // const filter = query.filter;
     // const sort = query.sort;
+
+    // TODO: сделать единообразно: либо везде trycatch либо везде handleAsync
 
     if (query.total) {
         const [data, error] = await handleAsync(getTitlesCount());

@@ -12,7 +12,7 @@ export async function handleAsync<T>(
         return [data, null] as const;
     } catch (error) {
         console.error(error);
-        let resultError;
+        // let resultError;
         // if (error instanceof Error) resultError = error
         return [
             null,
@@ -22,5 +22,12 @@ export async function handleAsync<T>(
 }
 
 export function respondWithError(event: H3Event<EventHandlerRequest>) {
-    setResponseStatus(event, 500, "Ошибка при обращении к базе данных");
+    setResponseStatus(event, 500, "API Error");
+}
+
+export function filterNullable<T>(array: T[]): NonNullable<T>[] {
+    return array.filter(
+        (value): value is NonNullable<typeof value> =>
+            value !== null && value !== undefined
+    );
 }

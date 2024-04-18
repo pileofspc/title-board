@@ -1,4 +1,4 @@
-import { deleteTitle } from "~/server/services/titles.server";
+import { deleteTitle } from "~/server/services/titles.service";
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event);

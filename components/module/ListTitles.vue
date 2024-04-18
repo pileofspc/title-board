@@ -5,10 +5,9 @@
                 v-if="globalStore.isAddingTitle"
                 key="first"
                 class="placeholder"
-                @done="performFetch"
+                @done="refetch"
             />
             <div v-else key="third"></div>
-
             <div class="title-list__main" key="second">
                 <VCard
                     v-if="isLoading"
@@ -25,17 +24,20 @@
                             @before-leave="beforeLeave"
                         >
                             <ModuleTitle
-                                v-for="title in titles"
+                                v-for="title in titlesStore.titles"
                                 :title="title"
                                 :key="title.uuid"
-                                @done="performFetch"
+                                @done="refetch"
                                 class="title-list__title"
                             />
                         </TransitionGroup>
                     </div>
 
                     <Transition>
-                        <div v-if="titles.length === 0" key="nothing">
+                        <div
+                            v-show="titlesStore.titles.length === 0"
+                            key="nothing"
+                        >
                             Пока ничего нет :(
                         </div>
                     </Transition>
@@ -56,26 +58,29 @@
     const titlesStore = useTitlesStore();
     const globalStore = useGlobalStore();
 
-    const titles = computed(() => titlesStore.titles);
     const isLoading = ref(false);
     const currentPage = ref(1);
 
-    async function performFetch() {
+    async function refetch() {
         isLoading.value = true;
         titlesStore.fetchPagesAmount();
         await titlesStore.fetchTitles(
             currentPage.value - 1 >= 0 ? currentPage.value - 1 : 0
         );
 
-        if (titles.value.length === 0 && currentPage.value > 0) {
+        if (titlesStore.titles.length === 0 && currentPage.value > 0) {
             currentPage.value--;
         }
         isLoading.value = false;
     }
 
-    watch(currentPage, performFetch, {
-        immediate: true,
-    });
+    // TODO: Возможно будут проблемы с top level await'ом
+    // сервер не ждет пока выполнится моя функция refetch без top level await'а
+    // Пробовал onServerPrefetch - выскакивает непонятная ошибка гидратации.
+    // Еще есть вариант в сетап функции стора сразу использовать useFetch, а дальше уже $fetch на клиенте
+    // Можно сделать просто useFetch здесь, но не хочется отказываться от удобной абстракции стора titles.ts
+    // Хотелось бы чтобы все манипуляции происходили именно в этой абстракции (необязательно в сторе, но чтобы все было в одном месте)
+    watch(currentPage, refetch);
 
     // FIXME: При удалении тайтла почему-то происходит анимация тегов
     function beforeLeave(element: Element) {
