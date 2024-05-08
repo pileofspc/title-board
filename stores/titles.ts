@@ -5,6 +5,7 @@ export const useTitlesStore = defineStore("titles", () => {
     const PER_PAGE = 10;
     const titles = useFetch("/api/titles", {
         params: {
+            page: 1,
             perpage: PER_PAGE,
         },
         transform: mapToClient,
@@ -61,6 +62,8 @@ export const useTitlesStore = defineStore("titles", () => {
         });
     }
 
+    // TODO: нужны ли эти проверки typeof smth === 'number'?
+
     async function fetchPagesAmount() {
         try {
             const response = await $fetch<number>("/api/titles", {
@@ -88,6 +91,8 @@ export const useTitlesStore = defineStore("titles", () => {
                 },
             });
             titles.value = mapToClient(response);
+
+            fetchPagesAmount();
         } catch (e) {
             const error = e as FetchError;
             console.error(`Ошибка при запросе на сервер: ${error.message}`);
@@ -177,11 +182,3 @@ export const useTitlesStore = defineStore("titles", () => {
         removeTag,
     };
 });
-
-// changeTitleName,
-// changeTitleDescription,
-// changeTitlePoster,
-// changeTitleStatus,
-// rateTitle,
-// addTag
-// removeTag

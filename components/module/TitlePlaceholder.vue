@@ -20,15 +20,9 @@
 <script setup lang="ts">
     import { titleStatuses } from "~/constants";
 
-    // TODO: этого эмита быть не должно: он нужен только потому,
-    //  что непонятно какую конкретно страницу фетчить, т.к пока не понимаю,
-    // как в наксте в сторе использовать одну функцию из другой (смотреть в ListTitles и titles.client.ts).
-    const emit = defineEmits(["done"]);
-
     const titlesStore = useTitlesStore();
     const globalStore = useGlobalStore();
 
-    // TODO: Тут не должно быть айдишника, т.к он присваивается в базе
     const title = ref<TitlePartial>({
         name: "Новый тайтл",
         description: "Новое описание",
@@ -66,7 +60,6 @@
         loading.value = true;
         await titlesStore.addTitle(title);
         loading.value = false;
-        emit("done");
         onCancel();
     }
     function onCancel() {

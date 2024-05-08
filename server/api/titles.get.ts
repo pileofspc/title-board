@@ -5,9 +5,11 @@ import {
 } from "~/server/services/titles.service";
 
 export default defineEventHandler(async (event) => {
+    // TODO: убрать хардкоженные значения
     const query = getQuery(event);
-    const page = Number(query.page) || 0;
+    const page = Number(query.page) || 1;
     const perpage = Number(query.perpage) || 10;
+    const offset = Math.max(page - 1, 0);
     // const filter = query.filter;
     // const sort = query.sort;
 
@@ -25,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
     if (query.page !== undefined) {
         const [data, error] = await handleAsync(
-            getTitles(perpage, page * perpage)
+            getTitles(perpage, offset * perpage)
         );
         if (error) {
             respondWithError(event);

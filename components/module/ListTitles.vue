@@ -2,10 +2,9 @@
     <div class="title-list mt-4">
         <TransitionGroup name="placeholder" @before-leave="beforeLeave">
             <ModuleTitlePlaceholder
-                v-if="globalStore.isAddingTitle"
+                v-if="isAddingTitle"
                 key="first"
                 class="placeholder"
-                @done="refetch"
             />
             <div v-else key="third"></div>
             <div class="title-list__main" key="second">
@@ -24,20 +23,16 @@
                             @before-leave="beforeLeave"
                         >
                             <ModuleTitle
-                                v-for="title in titlesStore.titles"
+                                v-for="title in titles"
                                 :title="title"
                                 :key="title.uuid"
-                                @done="refetch"
                                 class="title-list__title"
                             />
                         </TransitionGroup>
                     </div>
 
                     <Transition>
-                        <div
-                            v-show="titlesStore.titles.length === 0"
-                            key="nothing"
-                        >
+                        <div v-show="titles.length === 0" key="nothing">
                             Пока ничего нет :(
                         </div>
                     </Transition>
@@ -45,9 +40,9 @@
             </div>
         </TransitionGroup>
         <VPagination
-            v-if="titlesStore.pages > 1"
+            v-if="pages > 1"
             :disabled="isLoading"
-            :length="titlesStore.pages"
+            :length="pages"
             color="blue-grey"
             v-model="currentPage"
         />
@@ -55,24 +50,25 @@
 </template>
 
 <script setup lang="ts">
+    import { storeToRefs } from "pinia";
+
     const titlesStore = useTitlesStore();
     const globalStore = useGlobalStore();
+    const { titles, pages } = storeToRefs(titlesStore);
+    const { isAddingTitle } = storeToRefs(globalStore);
+
+    const router = useRouter();
+    router.replace({
+        ...router.currentRoute.value,
+        query: {
+            ...router.currentRoute.value.query,
+            page: "55",
+        },
+    });
+    // Number(useRoute().query.page) ||
 
     const isLoading = ref(false);
     const currentPage = ref(1);
-
-    async function refetch() {
-        isLoading.value = true;
-        titlesStore.fetchPagesAmount();
-        await titlesStore.fetchTitles(
-            currentPage.value - 1 >= 0 ? currentPage.value - 1 : 0
-        );
-
-        if (titlesStore.titles.length === 0 && currentPage.value > 0) {
-            currentPage.value--;
-        }
-        isLoading.value = false;
-    }
 
     // TODO: Возможно будут проблемы с top level await'ом
     // сервер не ждет пока выполнится моя функция refetch без top level await'а
@@ -81,6 +77,15 @@
     // Можно сделать просто useFetch здесь, но не хочется отказываться от удобной абстракции стора titles.ts
     // Хотелось бы чтобы все манипуляции происходили именно в этой абстракции (необязательно в сторе, но чтобы все было в одном месте)
     watch(currentPage, refetch);
+    async function refetch() {
+        isLoading.value = true;
+        await titlesStore.fetchTitles(currentPage.value);
+
+        if (titlesStore.titles.length === 0 && currentPage.value > 0) {
+            currentPage.value--;
+        }
+        isLoading.value = false;
+    }
 
     // FIXME: При удалении тайтла почему-то происходит анимация тегов
     function beforeLeave(element: Element) {
