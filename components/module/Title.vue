@@ -22,56 +22,56 @@
     const titlesStore = useTitlesStore();
     const loading = ref(false);
 
-    async function action<T extends () => Promise<any>>(awaited: T) {
-        loading.value = true;
-        const result = await awaited();
-        loading.value = false;
-        return result as ReturnType<T>;
-    }
-
-    async function onNameChange(name: string) {
-        handleLoadingAsync(async () => {
+    const onNameChange = decorateWithLoadingManagement(
+        async function onNameChange(name: string) {
             const reqTitle = { ...props.title, name };
             return titlesStore.updateTitle(reqTitle);
-        }, loading);
-    }
-    async function onDescriptionChange(description: string) {
-        action(async () => {
+        },
+        loading
+    );
+    const onDescriptionChange = decorateWithLoadingManagement(
+        async function onDescriptionChange(description: string) {
             const reqTitle = { ...props.title, description };
             return titlesStore.updateTitle(reqTitle);
-        });
-    }
-    async function onRatingChange(rating: number) {
-        action(async () => {
+        },
+        loading
+    );
+    const onRatingChange = decorateWithLoadingManagement(
+        async function onRatingChange(rating: number) {
             const reqTitle = { ...props.title, rating };
             return titlesStore.updateTitle(reqTitle);
-        });
-    }
-    async function onStatusChange(status: TitleStatus) {
-        action(async () => {
+        },
+        loading
+    );
+    const onStatusChange = decorateWithLoadingManagement(
+        async function onStatusChange(status: TitleStatus) {
             const reqTitle = { ...props.title, status };
             return titlesStore.updateTitle(reqTitle);
-        });
-    }
-    async function onAddTag(tag: Tag) {
-        action(async () => {
-            return titlesStore.addTag(props.title, tag);
-        });
-    }
-    async function onRemoveTag(tag: Tag) {
-        action(async () => {
+        },
+        loading
+    );
+    const onAddTag = decorateWithLoadingManagement(async function onAddTag(
+        tag: Tag
+    ) {
+        return titlesStore.addTag(props.title, tag);
+    }, loading);
+    const onRemoveTag = decorateWithLoadingManagement(
+        async function onRemoveTag(tag: Tag) {
             return titlesStore.removeTag(props.title, tag);
-        });
-    }
-    async function onPosterChange(poster: TitlePoster) {
-        action(async () => {
+        },
+        loading
+    );
+    const onPosterChange = decorateWithLoadingManagement(
+        async function onPosterChange(poster: TitlePoster) {
             const reqTitle = { ...props.title, poster };
             return titlesStore.updateTitle(reqTitle);
-        });
-    }
-    async function onRemoveTitle() {
-        action(async () => {
+        },
+        loading
+    );
+    const onRemoveTitle = decorateWithLoadingManagement(
+        async function onRemoveTitle() {
             await titlesStore.deleteTitle(props.title.uuid);
-        });
-    }
+        },
+        loading
+    );
 </script>

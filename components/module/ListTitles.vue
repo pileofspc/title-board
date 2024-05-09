@@ -9,7 +9,7 @@
             <div v-else key="third"></div>
             <div class="title-list__main" key="second">
                 <VCard
-                    v-if="isLoading"
+                    v-if="isLoadingTitles"
                     loading
                     rounded="lg"
                     min-height="230"
@@ -41,7 +41,7 @@
         </TransitionGroup>
         <VPagination
             v-if="pages > 1"
-            :disabled="isLoading"
+            :disabled="isLoadingPages"
             :length="pages"
             color="blue-grey"
             v-model="currentPage"
@@ -52,10 +52,10 @@
 <script setup lang="ts">
     const titlesStore = useTitlesStore();
     const globalStore = useGlobalStore();
-    const { titles, pages } = storeToRefs(titlesStore);
+    const { titles, pages, isLoadingTitles, isLoadingPages } =
+        storeToRefs(titlesStore);
     const { isAddingTitle } = storeToRefs(globalStore);
 
-    const isLoading = ref(false);
     const currentPage = Number(useRoute().query.page);
 
     // TODO: Возможно будут проблемы с top level await'ом

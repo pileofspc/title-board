@@ -7,7 +7,7 @@ export const useTitlesStore = defineStore("titles", () => {
     const PER_PAGE = 10;
     const { data: titles } = useFetch("/api/titles", {
         params: {
-            page: 1,
+            page: useRoute().query.page || 1,
             perpage: PER_PAGE,
         },
         transform: mapToClient,
