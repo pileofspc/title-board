@@ -22,15 +22,6 @@
     const titlesStore = useTitlesStore();
     const loading = ref(false);
 
-    // function action<T extends () => Promise<any>>(awaited: T): ReturnType<T> {
-    //     loading.value = true;
-
-    //     return awaited().then((res) => {
-    //         loading.value = false;
-    //         return res;
-    //     }) as ReturnType<T>;
-    // }
-
     async function action<T extends () => Promise<any>>(awaited: T) {
         loading.value = true;
         const result = await awaited();
@@ -39,10 +30,10 @@
     }
 
     async function onNameChange(name: string) {
-        action(async () => {
+        handleLoadingAsync(async () => {
             const reqTitle = { ...props.title, name };
             return titlesStore.updateTitle(reqTitle);
-        });
+        }, loading);
     }
     async function onDescriptionChange(description: string) {
         action(async () => {

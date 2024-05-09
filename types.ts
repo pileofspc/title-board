@@ -1,25 +1,29 @@
 type Expand<T> = T extends (...args: infer A) => infer R
     ? (...args: Expand<A>) => Expand<R>
     : T extends infer O
-    ? { [K in keyof O]: O[K] }
-    : never;
-
+      ? { [K in keyof O]: O[K] }
+      : never;
 type ExpandRecursively<T> = T extends (...args: infer A) => infer R
     ? (...args: ExpandRecursively<A>) => ExpandRecursively<R>
     : T extends object
-    ? T extends infer O
-        ? { [K in keyof O]: ExpandRecursively<O[K]> }
-        : never
-    : T;
+      ? T extends infer O
+          ? { [K in keyof O]: ExpandRecursively<O[K]> }
+          : never
+      : T;
+type AwaitedFix<T> = T extends PromiseLike<infer U> ? AwaitedFix<U> : T;
 
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 type DeepCopy<T> = T extends string | number | boolean | null
     ? T
     : T extends (infer U)[]
-    ? DeepCopy<U>[]
-    : T extends Record<PropertyKey, any>
-    ? { [K in keyof T as T[K] extends Function ? never : K]: DeepCopy<T[K]> }
-    : never;
+      ? DeepCopy<U>[]
+      : T extends Record<PropertyKey, any>
+        ? {
+              [K in keyof T as T[K] extends Function ? never : K]: DeepCopy<
+                  T[K]
+              >;
+          }
+        : never;
 
 type Color = import("~/constants").Colors[number];
 type TitleStatuses = import("~/constants").TitleStatuses;
@@ -83,19 +87,8 @@ type TitleServer = {
     pos_y?: number;
     tags: Tag[];
 };
-// type TitleServer =
-//     | TitleServerBase
-//     | (TitleServerBase & {
-//           img: string;
-//           pos_x: number;
-//           pos_y: number;
-//       });
 
 type TitleServerPartial = PartialBy<TitleServer, "id" | "uuid">;
-// type TitleServerPartial = PartialBy<
-//     TitleServer,
-//     "pos_x" | "pos_y" | "uuid" | "id"
-// >;
 
 type CustomQuery =
     | {

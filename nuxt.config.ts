@@ -1,9 +1,13 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-    modules: ["@invictus.codes/nuxt-vuetify", "@pinia/nuxt"],
+    modules: [
+        "@invictus.codes/nuxt-vuetify",
+        "@pinia/nuxt",
+        "nuxt-typed-router",
+    ],
 
     pinia: {
-        autoImports: ["defineStore"],
+        autoImports: ["defineStore", "storeToRefs"],
     },
 
     imports: {

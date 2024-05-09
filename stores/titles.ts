@@ -1,16 +1,18 @@
 import { FetchError } from "ofetch";
 
 export const useTitlesStore = defineStore("titles", () => {
+    const isLoadingPages = ref(false);
+    const isLoadingTitles = ref(false);
     const pages = ref(0);
     const PER_PAGE = 10;
-    const titles = useFetch("/api/titles", {
+    const { data: titles } = useFetch("/api/titles", {
         params: {
             page: 1,
             perpage: PER_PAGE,
         },
         transform: mapToClient,
         default: () => [],
-    }).data;
+    });
 
     // TODO: Привести Title и TitleServer к единому виду или хотя бы прилично переделать эту функцию с правильной типизацией
     function mapToClient(titles: TitleServer[]): Title[] {
@@ -64,40 +66,50 @@ export const useTitlesStore = defineStore("titles", () => {
 
     // TODO: нужны ли эти проверки typeof smth === 'number'?
 
-    async function fetchPagesAmount() {
-        try {
-            const response = await $fetch<number>("/api/titles", {
-                params: {
-                    total: true,
-                },
-            });
+    const fetchPagesAmount = decorateWithLoadingManagement(
+        async function fetchPagesAmount() {
+            try {
+                const response = await $fetch<number>("/api/titles", {
+                    params: {
+                        total: true,
+                    },
+                });
 
-            if (typeof response === "number") {
-                pages.value = Math.ceil(response / PER_PAGE);
+                if (typeof response === "number") {
+                    pages.value = Math.ceil(response / PER_PAGE);
+                }
+            } catch (e) {
+                const error = e as FetchError;
+                console.error(
+                    `Ошибка при запросе на сервер: ${error?.message}`
+                );
             }
-        } catch (e) {
-            const error = e as FetchError;
-            console.error(`Ошибка при запросе на сервер: ${error?.message}`);
-        }
-    }
+        },
+        isLoadingPages
+    );
 
-    async function fetchTitles(page?: number) {
-        try {
-            const response = await $fetch<TitleServer[]>("/api/titles", {
-                params: {
-                    perpage: String(PER_PAGE),
-                    page:
-                        typeof page === "number" && page >= 0 ? `${page}` : "0",
-                },
-            });
-            titles.value = mapToClient(response);
+    const fetchTitles = decorateWithLoadingManagement(
+        async function fetchTitles(page?: number) {
+            try {
+                const response = await $fetch<TitleServer[]>("/api/titles", {
+                    params: {
+                        perpage: String(PER_PAGE),
+                        page:
+                            typeof page === "number" && page >= 0
+                                ? `${page}`
+                                : "0",
+                    },
+                });
+                titles.value = mapToClient(response);
 
-            fetchPagesAmount();
-        } catch (e) {
-            const error = e as FetchError;
-            console.error(`Ошибка при запросе на сервер: ${error.message}`);
-        }
-    }
+                fetchPagesAmount();
+            } catch (e) {
+                const error = e as FetchError;
+                console.error(`Ошибка при запросе на сервер: ${error.message}`);
+            }
+        },
+        isLoadingTitles
+    );
 
     async function addTitle(title: TitlePartial) {
         const mappedTitle = mapToServerPartial([title])[0];
@@ -132,7 +144,6 @@ export const useTitlesStore = defineStore("titles", () => {
     async function updateTitle(title: Title) {
         const mappedTitle = mapToServerPartial([title])[0];
 
-        console.log(mappedTitle);
         try {
             const response = await $fetch<TitleServer>("/api/titles", {
                 method: "PUT",
@@ -141,7 +152,6 @@ export const useTitlesStore = defineStore("titles", () => {
 
             const mappedResponse = mapToClient([response])[0];
 
-            console.log(mappedResponse);
             const foundIndex = titles.value.findIndex(
                 (item) => item.uuid === mappedResponse?.uuid
             );
@@ -173,6 +183,8 @@ export const useTitlesStore = defineStore("titles", () => {
     return {
         titles: computed(() => titles.value),
         pages: computed(() => pages.value),
+        isLoadingPages: computed(() => isLoadingPages.value),
+        isLoadingTitles: computed(() => isLoadingTitles.value),
         addTitle,
         deleteTitle,
         fetchTitles,

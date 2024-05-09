@@ -39,3 +39,24 @@ export function getCoords(elem: Element) {
         height: box.height,
     };
 }
+
+export async function handleLoadingAsync<T>(
+    asyncFn: () => Promise<T>,
+    loading: Ref<boolean>
+) {
+    loading.value = true;
+    const result = await asyncFn();
+    loading.value = false;
+    return result;
+}
+
+export function decorateWithLoadingManagement<
+    T extends (...args: any[]) => Promise<any>,
+>(fn: T, loading: Ref<boolean>) {
+    return async function decorated(...args: Parameters<T>) {
+        loading.value = true;
+        const awaited = await fn(...args);
+        loading.value = false;
+        return awaited as AwaitedFix<ReturnType<T>>;
+    };
+}
