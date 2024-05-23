@@ -45,10 +45,10 @@
     function onStatusChange(status: TitleStatus) {
         title.value.status = status;
     }
-    function onAddTag(tag: Tag) {
+    function onAddTag(tag: TagPartial) {
         title.value.tags.push(tag);
     }
-    function onRemoveTag(tag: Tag) {
+    function onRemoveTag(tag: TagPartial) {
         title.value.tags = title.value.tags.filter(
             (titleTag) => titleTag !== tag
         );

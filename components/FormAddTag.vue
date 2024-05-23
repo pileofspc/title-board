@@ -55,7 +55,6 @@
 
 <script setup lang="ts">
     import type { VTextField } from "vuetify/lib/components/index.mjs";
-    import { v4 } from "uuid";
     import { colors } from "~/constants";
 
     const props = defineProps({
@@ -68,7 +67,7 @@
     });
     const emit = defineEmits<{
         close: [];
-        addTag: [tag: Tag];
+        addTag: [tag: TagPartial];
     }>();
 
     const valid = ref(false);
@@ -90,7 +89,6 @@
             return;
         }
         emit("addTag", {
-            uuid: v4(),
             color: selectedColor.value,
             text: tagText.value,
         });
@@ -109,7 +107,9 @@
         }
 
         &__color {
-            transition: outline-color 0.2s, outline-offset 0.2s;
+            transition:
+                outline-color 0.2s,
+                outline-offset 0.2s;
             outline-offset: 12px;
             outline: 2px solid transparent;
         }

@@ -2,8 +2,8 @@
     <div class="tag-group">
         <TransitionGroup @before-leave="beforeLeave" @after-leave="afterLeave">
             <VChip
-                v-for="tag in props.tags"
-                :key="tag.uuid"
+                v-for="(tag, index) in props.tags"
+                :key="tag.uuid || index"
                 variant="elevated"
                 :color="tag.color"
                 class="tag-group__tag transition"
@@ -19,49 +19,45 @@
                     @click="emit('removeTag', tag)"
                 />
             </VChip>
+
             <VChip
-                ref="menuActivator"
                 v-if="!isAtMaxTags"
                 key="add"
-                @click=""
+                link
                 prepend-icon="mdi-plus"
                 color="blue-grey"
                 class="transition"
             >
                 Добавить тег
+
+                <VMenu
+                    :model-value="props.menu ?? isMenuOpen"
+                    @update:model-value="onMenuToggle"
+                    activator="parent"
+                    location="bottom start"
+                    :close-on-content-click="false"
+                    offset="8"
+                >
+                    <FormAddTag
+                        :loading="props.loading"
+                        :disabled="props.disabled || isAtMaxTags"
+                        @close="closeMenu"
+                        @add-tag="(tag) => emit('addTag', tag)"
+                    />
+                </VMenu>
             </VChip>
         </TransitionGroup>
-
-        <VMenu
-            :model-value="props.menu ?? isMenuOpen"
-            @update:model-value="onMenuToggle"
-            :activator="(menuActivator as ComponentPublicInstance)"
-            location="bottom start"
-            :close-on-content-click="false"
-            offset="8"
-        >
-            <FormAddTag
-                :loading="props.loading"
-                :disabled="props.disabled || isAtMaxTags"
-                @close="closeMenu"
-                @add-tag="(tag) => emit('addTag', tag)"
-            />
-        </VMenu>
     </div>
 </template>
 
 <script setup lang="ts">
-    // <!-- пустой @click добавлен, чтобы применились стили, а сама менюшка вынесена из TransitionGroup, чтобы -->
-    // <!-- работали анимации появления и исчезновения элементов -->
-    // <!-- TODO: Понять как реализовано то, что при назначении @click меняется поведение компонента, независимое от этого обработчика (даже если он пустой) -->
-    // <!-- TODO:  Если получится - сделать чтобы анмация появления кнопки добавить была с конца а не с начала -->
     import type { VChip } from "vuetify/lib/components/index.mjs";
-
+    // <!-- TODO:  Если получится - сделать чтобы анмация появления кнопки добавить была с конца а не с начала -->
     // TODO: Выяснить почему на 24 строке происходит ошибка гидратации если использовать v-show, но не происходит, если использовать v-if
 
     const props = defineProps({
         tags: {
-            type: Array as PropType<Tag[]>,
+            type: Array as PropType<TagPartial[]>,
             default: [],
         },
         maxTags: {
@@ -80,12 +76,11 @@
         },
     });
     const emit = defineEmits<{
-        addTag: [tag: Tag];
-        removeTag: [tag: Tag];
+        addTag: [tag: TagPartial];
+        removeTag: [tag: TagPartial];
         "update:menu": [value: boolean];
     }>();
 
-    const menuActivator = ref<InstanceType<typeof VChip> | null>(null);
     const isMenuOpen = ref(false);
     const isAtMaxTags = computed(() => {
         if (!props.maxTags) return false;

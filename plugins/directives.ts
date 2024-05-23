@@ -1,9 +1,7 @@
-import type { Directive } from "nuxt/dist/app/compat/capi";
-
 const listeners: Map<HTMLElement, EventListener> = new Map();
 
 export default defineNuxtPlugin((nuxtApp) => {
-    const outside: Directive<HTMLElement, EventListener> = {
+    nuxtApp.vueApp.directive("outside", {
         mounted(el, binding) {
             const listener: EventListener = (e) => {
                 if (el.contains(e.target as HTMLElement)) return;
@@ -17,14 +15,11 @@ export default defineNuxtPlugin((nuxtApp) => {
             document.removeEventListener("mousedown", listeners.get(el)!);
             listeners.delete(el);
         },
-    };
+    });
 
-    const focus: Directive<HTMLElement, EventListener> = {
+    nuxtApp.vueApp.directive("focus", {
         mounted(el) {
             el.focus();
         },
-    };
-
-    nuxtApp.vueApp.directive("outside", outside);
-    nuxtApp.vueApp.directive("focus", focus);
+    });
 });

@@ -11,7 +11,7 @@ type ExpandRecursively<T> = T extends (...args: infer A) => infer R
           : never
       : T;
 type AwaitedFix<T> = T extends PromiseLike<infer U> ? AwaitedFix<U> : T;
-
+type Overwrite<T, U> = Omit<T, keyof U> & U;
 type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 type DeepCopy<T> = T extends string | number | boolean | null
     ? T
@@ -35,7 +35,7 @@ type Tag = {
     color: Color;
     text: string;
 };
-type TagPartial = Omit<Tag, "uuid" | "title_uuid">;
+type TagPartial = PartialBy<Tag, "uuid" | "title_uuid">;
 
 // TODO:
 // Переделать типы более осознанно и синхронизировать с бэковыми
@@ -62,18 +62,13 @@ type Title = {
     poster?: TitlePoster;
     tags: Tag[];
 };
-type TitlePartial = PartialBy<Title, "uuid" | "id">;
+type TitlePartial = Overwrite<
+    PartialBy<Title, "uuid" | "id">,
+    {
+        tags: TagPartial[];
+    }
+>;
 
-type TitleServerBase = {
-    uuid: string;
-    id: string;
-    name: string;
-    description: string;
-    status: TitleStatus;
-    rating?: number;
-    link?: string;
-    tags: Tag[];
-};
 type TitleServer = {
     uuid: string;
     id: string;
@@ -87,8 +82,10 @@ type TitleServer = {
     pos_y?: number;
     tags: Tag[];
 };
-
-type TitleServerPartial = PartialBy<TitleServer, "id" | "uuid">;
+type TitleServerPartial = Overwrite<
+    PartialBy<Title, "uuid" | "id">,
+    { tags: TagPartial[] }
+>;
 
 type CustomQuery =
     | {

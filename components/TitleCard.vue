@@ -36,19 +36,20 @@
                 </div>
 
                 <div class="mt-3">
-                    <VMenu location="bottom start" offset="8">
-                        <template #activator="{ props: slotProps }">
-                            <VChip
-                                v-bind="slotProps"
-                                :disabled="props.loading"
-                                :color="statuses[props.title.status].color"
-                            >
-                                {{ statuses[props.title.status].display }}
-                            </VChip>
-                        </template>
+                    <VChip
+                        :disabled="props.loading"
+                        :color="statuses[props.title.status].color"
+                    >
+                        {{ statuses[props.title.status].display }}
 
-                        <FormChangeStatus @selected="onStatusChange" />
-                    </VMenu>
+                        <VMenu
+                            location="bottom start"
+                            offset="8"
+                            activator="parent"
+                        >
+                            <FormChangeStatus @selected="onStatusChange" />
+                        </VMenu>
+                    </VChip>
                 </div>
 
                 <VRating
@@ -81,28 +82,26 @@
                         />
                     </template>
                     <template v-else>
-                        <VMenu
-                            location="top right"
-                            offset="8"
-                            :close-on-content-click="false"
-                            v-model="isRemoveTitleMenuOpen"
+                        <VBtn
+                            icon="mdi-delete"
+                            size="small"
+                            variant="tonal"
+                            color="blue-grey"
                         >
-                            <template #activator="{ props: slotProps }">
-                                <VBtn
-                                    v-bind="slotProps"
-                                    icon="mdi-delete"
-                                    size="small"
-                                    variant="tonal"
-                                    color="blue-grey"
+                            <VMenu
+                                location="top right"
+                                offset="8"
+                                activator="parent"
+                                :close-on-content-click="false"
+                                v-model="isRemoveTitleMenuOpen"
+                            >
+                                <FormConfirm
+                                    :disabled="loading"
+                                    @confirm="onRemoveTitleClick"
+                                    @cancel="isRemoveTitleMenuOpen = false"
                                 />
-                            </template>
-
-                            <FormConfirm
-                                :disabled="loading"
-                                @confirm="onRemoveTitleClick"
-                                @cancel="isRemoveTitleMenuOpen = false"
-                            />
-                        </VMenu>
+                            </VMenu>
+                        </VBtn>
                     </template>
                 </div>
             </div>
@@ -123,8 +122,8 @@
         descriptionChange: [description: string];
         ratingChange: [rating: number];
         statusChange: [status: TitleStatus];
-        addTag: [tag: Tag];
-        removeTag: [tag: Tag];
+        addTag: [tag: TagPartial];
+        removeTag: [tag: TagPartial];
         posterChange: [poster: TitlePoster];
         removeTitle: [title: TitlePartial];
         confirm: [title: TitlePartial];
@@ -150,10 +149,10 @@
     function onStatusChange(status: TitleStatus) {
         emit("statusChange", status);
     }
-    function onAddTagClick(tag: Tag) {
+    function onAddTagClick(tag: TagPartial) {
         emit("addTag", tag);
     }
-    function onRemoveTagClick(tag: Tag) {
+    function onRemoveTagClick(tag: TagPartial) {
         emit("removeTag", tag);
     }
     function onEditPosterClick(poster: TitlePoster) {

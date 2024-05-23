@@ -19,6 +19,12 @@
         title: Title;
     }>();
 
+    function isFullTag(tag: TagPartial | Tag): tag is Tag {
+        return (
+            typeof tag.title_uuid === "string" && typeof tag.uuid === "string"
+        );
+    }
+
     const titlesStore = useTitlesStore();
     const loading = ref(false);
 
@@ -51,13 +57,19 @@
         loading
     );
     const onAddTag = decorateWithLoadingManagement(async function onAddTag(
-        tag: Tag
+        tag: TagPartial
     ) {
         return titlesStore.addTag(props.title, tag);
     }, loading);
     const onRemoveTag = decorateWithLoadingManagement(
-        async function onRemoveTag(tag: Tag) {
-            return titlesStore.removeTag(props.title, tag);
+        async function onRemoveTag(tag: TagPartial) {
+            if (isFullTag(tag)) {
+                return titlesStore.removeTag(props.title, tag);
+            } else {
+                console.error(
+                    "Ошибка при удалении тега: отсутствует uuid или title_uuid"
+                );
+            }
         },
         loading
     );

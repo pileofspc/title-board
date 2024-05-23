@@ -141,7 +141,7 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
-    async function updateTitle(title: Title) {
+    async function updateTitle(title: Title | TitlePartial) {
         const mappedTitle = mapToServerPartial([title])[0];
 
         try {
@@ -168,7 +168,7 @@ export const useTitlesStore = defineStore("titles", () => {
         }
     }
 
-    async function addTag(title: Title, tag: Tag) {
+    async function addTag(title: Title, tag: TagPartial) {
         const tags = [...title.tags, tag];
         const reqTitle = { ...title, tags };
         return updateTitle(reqTitle);
