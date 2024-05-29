@@ -83,18 +83,13 @@ type TitleServer = {
     tags: Tag[];
 };
 type TitleServerPartial = Overwrite<
-    PartialBy<Title, "uuid" | "id">,
+    PartialBy<TitleServer, "uuid" | "id">,
     { tags: TagPartial[] }
 >;
 
-type CustomQuery =
-    | {
-          text: string;
-          values?: (string | number | null | undefined)[];
-          skip?: false | null | undefined;
-      }
-    | {
-          text?: string;
-          values?: (string | number | null | undefined)[];
-          skip: true;
-      };
+type ExpandedType = ExpandRecursively<TitleServerPartial>;
+
+type CustomQuery = {
+    text: string;
+    values?: (string | number | null | undefined)[];
+};

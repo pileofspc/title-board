@@ -12,7 +12,7 @@ const defaultTitle = {
 const MAX_TAGS = 5;
 
 const construct = {
-    getTitles: function (perpage: number, offset: number): CustomQuery {
+    getTitles(perpage: number, offset: number): CustomQuery {
         return {
             text: `SELECT titles.*, json_agg(tags.*) AS tags FROM titles
             LEFT JOIN tags ON titles.uuid = tags.title_uuid
@@ -21,7 +21,7 @@ const construct = {
             values: [perpage, offset],
         };
     },
-    getAllTitles: function (): CustomQuery {
+    getAllTitles(): CustomQuery {
         return {
             //text: `SELECT titles.*, CASE WHEN COUNT(tags) = 0 THEN '[]' ELSE json_agg(tags.*) END AS tags FROM titles
             text: `SELECT titles.*, COALESCE(json_agg(tags.*) FILTER(WHERE tags.title_uuid IS NOT NULL), '[]') AS tags FROM titles
@@ -30,20 +30,17 @@ const construct = {
             ORDER BY titles.id DESC`,
         };
     },
-    getAllTitlesWithoutTags: function (): CustomQuery {
+    getAllTitlesWithoutTags(): CustomQuery {
         return {
             text: `SELECT * FROM titles
             LEFT JOIN tags ON titles.uuid = tags.title_uuid
             ORDER BY titles.id DESC`,
         };
     },
-    getTitlesCount: function (): CustomQuery {
+    getTitlesCount(): CustomQuery {
         return { text: "SELECT COUNT(*) FROM titles" };
     },
-    postTitle: function (
-        title: TitleServerPartial,
-        titleUUID: string
-    ): CustomQuery {
+    postTitle(title: TitleServerPartial, titleUUID: string): CustomQuery {
         return {
             text: `INSERT INTO titles(uuid, name, description, rating, img, link, pos_x, pos_y, status)
             VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -61,7 +58,7 @@ const construct = {
             ],
         };
     },
-    updateTitle: function (title: TitleServer): CustomQuery {
+    updateTitle(title: TitleServer): CustomQuery {
         return {
             text: `UPDATE titles
             SET name = $2,
@@ -88,14 +85,14 @@ const construct = {
             ],
         };
     },
-    deleteTitle: function (titleUUID: string): CustomQuery {
+    deleteTitle(titleUUID: string): CustomQuery {
         return {
             text: "DELETE FROM titles WHERE uuid = $1",
             values: [titleUUID],
         };
     },
 
-    getTags: function (titleUUID: string): CustomQuery {
+    getTags(titleUUID: string): CustomQuery {
         return {
             text: `SELECT * FROM tags
             WHERE title_uuid = $1
@@ -103,21 +100,22 @@ const construct = {
             values: [titleUUID],
         };
     },
-    getTagsCount: function (titleUUID: string): CustomQuery {
+    getTagsCount(titleUUID: string): CustomQuery {
         return {
             text: `SELECT COUNT(*) FROM tags
             WHERE title_uuid = $1`,
             values: [titleUUID],
         };
     },
-    postTags: function (tags: TagPartial[], titleUUID: string): CustomQuery {
-        if (tags.length === 0) {
-            return { skip: true };
-        }
-        if (tags.length > MAX_TAGS) {
-            throw new Error("Невозможно добавить больше 5 тегов одновременно");
-        }
-
+    postTag(tag: TagPartial, titleUUID: string): CustomQuery {
+        return {
+            text: `INSERT INTO tags(text, color, title_uuid) VALUES(
+                $1, $2, $3
+            )`,
+            values: [tag.text, tag.color, tag.title_uuid],
+        };
+    },
+    postTags(tags: TagPartial[], titleUUID: string): CustomQuery {
         let counter = 1;
         let text = "INSERT INTO tags(text, color, title_uuid) VALUES";
         tags.forEach((tag, index) => {
@@ -135,13 +133,12 @@ const construct = {
 
         return { text, values };
     },
-    deleteTags: function (titleUUID: string): CustomQuery {
+    deleteTags(titleUUID: string): CustomQuery {
         return {
             text: "DELETE FROM tags WHERE title_uuid = $1",
             values: [titleUUID],
         };
     },
-    // updateTags не нужен, потому что это по сути будет две команды DELETE, а затем INSERT, которые уже есть в объекте
 };
 
 export async function postTitle(
@@ -163,11 +160,19 @@ export async function postTitle(
     return titleResult;
 }
 export async function updateTitle(title: TitleServer): Promise<TitleServer> {
-    const results = await queryTransaction([
+    if (title.tags.length > MAX_TAGS) {
+        throw new Error("Невозможно добавить больше 5 тегов одновременно");
+    }
+
+    const queries = [
         construct.updateTitle(title),
         construct.deleteTags(title.uuid),
-        construct.postTags(title.tags, title.uuid),
-    ]);
+    ];
+    if (title.tags.length > 0) {
+        queries.push(construct.postTags(title.tags, title.uuid));
+    }
+
+    const results = await queryTransaction(queries);
 
     const titleResult: TitleServer = results[0]?.[0];
     const tagsResult: Tag[] = results[2] || [];
@@ -198,6 +203,3 @@ export async function getAllTitles(): Promise<TitleServer[]> {
 export async function getTitlesCount(): Promise<number> {
     return (await query(construct.getTitlesCount()))[0].count;
 }
-
-// TODO: Сделать так, чтобы хотя бы теги (а может быть и тайтлы тоже) не перезаписывались полностью
-// На данный момент получается слишком много перезаписей, в том числе uuid, из-за чего на фронте неправильные анимации, так как там uuid используется в качестве ключа

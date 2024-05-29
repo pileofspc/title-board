@@ -9,9 +9,6 @@ const pool = new pg.Pool({
 });
 
 export async function query(query: CustomQuery) {
-    if (query.skip) {
-        throw new Error("Невозможно выполнить пустой запрос");
-    }
     return (await pool.query(query.text, query.values)).rows;
 }
 
@@ -21,10 +18,6 @@ export async function queryTransaction(subqueries: CustomQuery[]) {
         await client.query("BEGIN");
         const results = [];
         for (const query of subqueries) {
-            if (query.skip) {
-                results.push(null);
-                continue;
-            }
             results.push((await client.query(query.text, query.values)).rows);
         }
         await client.query("COMMIT");
