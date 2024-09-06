@@ -1,3 +1,7 @@
+interface ArrayConstructor {
+    isArray(arg: ReadonlyArray<any> | any): arg is ReadonlyArray<any>;
+}
+
 type Expand<T> = T extends (...args: infer A) => infer R
     ? (...args: Expand<A>) => Expand<R>
     : T extends infer O
@@ -87,9 +91,11 @@ type TitleServerPartial = Overwrite<
     { tags: TagPartial[] }
 >;
 
-type ExpandedType = ExpandRecursively<TitleServerPartial>;
-
-type CustomQuery = {
-    text: string;
-    values?: (string | number | null | undefined)[];
+// type StorageClient = ReturnType<
+//     typeof import("@/server/utils/db").getStorageClient
+// >;
+type CustomQuery<T> = import("@/server/utils/db").CustomQuery<T>;
+type SqlClient = {
+    query<T>(customQuery: CustomQuery<T>): Promise<T>;
+    release(): void;
 };

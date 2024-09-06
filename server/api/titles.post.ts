@@ -1,4 +1,4 @@
-import { postTitle } from "~/server/services/titles.service";
+import { postTitle } from "~/server/services/titles";
 
 export default defineEventHandler(async (event) => {
     const title: TitleServerPartial = await readBody(event);

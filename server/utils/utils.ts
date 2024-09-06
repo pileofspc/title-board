@@ -12,8 +12,6 @@ export async function handleAsync<T>(
         return [data, null] as const;
     } catch (error) {
         console.error(error);
-        // let resultError;
-        // if (error instanceof Error) resultError = error
         return [
             null,
             error instanceof Error ? error : new Error(String(error)),

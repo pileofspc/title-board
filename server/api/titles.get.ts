@@ -2,7 +2,7 @@ import {
     getTitles,
     getAllTitles,
     getTitlesCount,
-} from "~/server/services/titles.service";
+} from "~/server/services/titles";
 
 export default defineEventHandler(async (event) => {
     // TODO: убрать хардкоженные значения
@@ -10,8 +10,6 @@ export default defineEventHandler(async (event) => {
     const page = Number(query.page) || 1;
     const perpage = Number(query.perpage) || 10;
     const offset = Math.max(page - 1, 0);
-    // const filter = query.filter;
-    // const sort = query.sort;
 
     // TODO: сделать единообразно: либо везде trycatch либо везде handleAsync
 

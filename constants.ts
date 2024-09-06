@@ -28,14 +28,16 @@ export const statuses = {
 
 export const apiEndpoints = {
     titles: "http://localhost:3000/api/titles",
+    tags: "http://localhost:3000/api/tags",
 } as const;
 
-export const mockTitle: Title = {
-    id: "5",
-    uuid: "86ec4dfb-7b8a-41cd-a7c4-32c67404a260",
-    name: "asd",
+export const defaultTitle = {
+    name: "Новый тайтл",
     description: "Описание нового тайтла",
     status: "NOT_WATCHED",
-    poster: {},
+    pos_x: 50,
+    pos_y: 50,
     tags: [],
 };
+
+export const MAX_TAGS_PER_TITLE = 5;
