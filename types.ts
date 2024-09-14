@@ -29,7 +29,8 @@ type DeepCopy<T> = T extends string | number | boolean | null
           }
         : never;
 
-type Color = import("~/constants").Colors[number];
+type Colors = import("~/constants").Colors;
+type Color = Colors[number];
 type TitleStatuses = import("~/constants").TitleStatuses;
 type TitleStatus = TitleStatuses[keyof TitleStatuses];
 
@@ -91,10 +92,7 @@ type TitleServerPartial = Overwrite<
     { tags: TagPartial[] }
 >;
 
-// type StorageClient = ReturnType<
-//     typeof import("@/server/utils/db").getStorageClient
-// >;
-type CustomQuery<T> = import("@/server/utils/db").CustomQuery<T>;
+type CustomQuery<T> = import("~/server/utils/db").CustomQuery<T>;
 type SqlClient = {
     query<T>(customQuery: CustomQuery<T>): Promise<T>;
     release(): void;

@@ -19,7 +19,7 @@ export async function handleAsync<T>(
     }
 }
 
-export function respondWithError(event: H3Event<EventHandlerRequest>) {
+export function setErrorStatus(event: H3Event<EventHandlerRequest>) {
     setResponseStatus(event, 500, "API Error");
 }
 

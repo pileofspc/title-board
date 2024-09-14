@@ -1,4 +1,4 @@
-import { FetchError } from "ofetch";
+import type { FetchError } from "ofetch";
 
 export const useTitlesStore = defineStore("titles", () => {
     const isLoadingPages = ref(false);

@@ -1,3 +1,4 @@
+import { validate } from "./validation";
 import { actions } from "./actions";
 
 export async function postTitle(
@@ -5,9 +6,11 @@ export async function postTitle(
     title: TitleServerPartial,
     titleUUID?: string
 ) {
+    validate.title(title);
     return await actions.postTitle(sqlClient, title, titleUUID);
 }
 export async function updateTitle(sqlClient: SqlClient, title: TitleServer) {
+    validate.title(title);
     return await actions.updateTitle(sqlClient, title);
 }
 export async function deleteTitle(sqlClient: SqlClient, titleUUID: string) {

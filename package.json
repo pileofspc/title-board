@@ -16,7 +16,7 @@
         "@types/node": "^18.16.19",
         "@types/pg": "^8.10.9",
         "@types/uuid": "^9.0.2",
-        "nuxt": "^3.12.3",
+        "nuxt": "^3.13.1",
         "nuxt-typed-router": "^3.6.3",
         "sass": "^1.77.0"
     },
@@ -24,7 +24,8 @@
         "pg": "^8.11.5",
         "pinia": "^2.1.7",
         "uuid": "^9.0.1",
-        "vuetify": "^3.6.4"
+        "vuetify": "^3.6.4",
+        "zod": "^3.23.8"
     },
     "overrides": {
         "vue": "latest"

@@ -1,8 +1,8 @@
 {
-    // https://nuxt.com/docs/guide/concepts/typescript
     "extends": "./.nuxt/tsconfig.json",
     "compilerOptions": {
         "noUncheckedIndexedAccess": true,
-        "noErrorTruncation": true
+        "noErrorTruncation": true,
+        "moduleDetection": "auto"
     }
 }

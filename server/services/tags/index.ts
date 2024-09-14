@@ -1,4 +1,4 @@
-import { validate } from "~/server/services/tags/validation";
+import { validate } from "./validation";
 import { actions } from "./actions";
 
 export async function handlePostTags(
@@ -6,14 +6,13 @@ export async function handlePostTags(
     tags: TagPartial[],
     titleUUID: string
 ) {
-    if (await validate.tagsAmount(tags.length, titleUUID)) {
-        return await actions.postTags(sqlClient, tags, titleUUID);
-    } else {
-        throw new Error("validation error");
-    }
+    validate.tags(tags);
+    await validate.tagsAmount(tags.length, titleUUID);
+    return await actions.postTags(sqlClient, tags, titleUUID);
 }
 
 export async function handleDeleteTag(sqlClient: SqlClient, tag: Tag) {
+    validate.tag(tag);
     return await actions.deleteTag(sqlClient, tag);
 }
 
