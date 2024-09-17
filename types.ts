@@ -2,6 +2,8 @@ interface ArrayConstructor {
     isArray(arg: ReadonlyArray<any> | any): arg is ReadonlyArray<any>;
 }
 
+type Timer = ReturnType<typeof setTimeout>;
+
 type Expand<T> = T extends (...args: infer A) => infer R
     ? (...args: Expand<A>) => Expand<R>
     : T extends infer O

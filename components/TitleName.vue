@@ -106,13 +106,13 @@
 
     function edit() {
         value.value = props.text;
-        isDefined(props.editing)
+        props.editing != null
             ? emit("update:editing", true)
             : (isEditing.value = true);
     }
 
     function close() {
-        isDefined(props.editing)
+        props.editing != null
             ? emit("update:editing", false)
             : (isEditing.value = false);
     }

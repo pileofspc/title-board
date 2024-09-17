@@ -13,8 +13,8 @@ export const actions = {
         return await sqlClient.query(construct.deleteTag(tag));
     },
 
-    async getTags(sqlClient: SqlClient, titleUUID: string) {
-        return await sqlClient.query(construct.getTags(titleUUID));
+    async getTags(sqlClient: SqlClient, titleUUIDs: string | string[]) {
+        return await sqlClient.query(construct.getTags(titleUUIDs));
     },
 
     async getTagsCount(

@@ -64,52 +64,38 @@ export const useTitlesStore = defineStore("titles", () => {
         });
     }
 
-    // TODO: нужны ли эти проверки typeof smth === 'number'?
+    async function fetchPagesAmount() {
+        try {
+            const response = await $fetch<number>("/api/titles", {
+                params: {
+                    total: true,
+                },
+            });
 
-    const fetchPagesAmount = decorateWithLoadingManagement(
-        async function fetchPagesAmount() {
-            try {
-                const response = await $fetch<number>("/api/titles", {
-                    params: {
-                        total: true,
-                    },
-                });
+            pages.value = Math.ceil(response / PER_PAGE);
+        } catch (e) {
+            const error = e as FetchError;
+            console.error(`Ошибка при запросе на сервер: ${error?.message}`);
+        }
+    }
 
-                if (typeof response === "number") {
-                    pages.value = Math.ceil(response / PER_PAGE);
-                }
-            } catch (e) {
-                const error = e as FetchError;
-                console.error(
-                    `Ошибка при запросе на сервер: ${error?.message}`
-                );
-            }
-        },
-        isLoadingPages
-    );
+    async function fetchTitles(page?: number) {
+        try {
+            const response = await $fetch<TitleServer[]>("/api/titles", {
+                params: {
+                    perpage: String(PER_PAGE),
+                    page:
+                        typeof page === "number" && page >= 0 ? `${page}` : "0",
+                },
+            });
+            titles.value = mapToClient(response);
 
-    const fetchTitles = decorateWithLoadingManagement(
-        async function fetchTitles(page?: number) {
-            try {
-                const response = await $fetch<TitleServer[]>("/api/titles", {
-                    params: {
-                        perpage: String(PER_PAGE),
-                        page:
-                            typeof page === "number" && page >= 0
-                                ? `${page}`
-                                : "0",
-                    },
-                });
-                titles.value = mapToClient(response);
-
-                fetchPagesAmount();
-            } catch (e) {
-                const error = e as FetchError;
-                console.error(`Ошибка при запросе на сервер: ${error.message}`);
-            }
-        },
-        isLoadingTitles
-    );
+            fetchPagesAmount();
+        } catch (e) {
+            const error = e as FetchError;
+            console.error(`Ошибка при запросе на сервер: ${error.message}`);
+        }
+    }
 
     async function addTitle(title: TitlePartial) {
         const mappedTitle = mapToServerPartial([title])[0];
@@ -124,7 +110,7 @@ export const useTitlesStore = defineStore("titles", () => {
             const error = e as FetchError;
             console.error(
                 `Ошибка при запросе на сервер: ${error.message}
-                Статус-код: ${error.statusCode}`
+                    Статус-код: ${error.statusCode}`
             );
         }
     }
@@ -163,21 +149,42 @@ export const useTitlesStore = defineStore("titles", () => {
             const error = e as FetchError;
             console.error(
                 `Ошибка при запросе на сервер: ${error.message}
-                Статус-код: ${error.statusCode}`
+                    Статус-код: ${error.statusCode}`
             );
         }
     }
 
     async function addTag(title: Title, tag: TagPartial) {
-        const tags = [...title.tags, tag];
-        const reqTitle = { ...title, tags };
-        return updateTitle(reqTitle);
+        // TODO: Возможно лучше будет не принимать весь тайтл, а только его uuid
+        try {
+            const response = await $fetch<Tag[]>("/api/tags", {
+                method: "POST",
+                body: {
+                    titleUUID: title.uuid,
+                    tags: [tag],
+                },
+            });
+
+            return response[0];
+        } catch (e) {
+            const error = e as FetchError;
+            console.error(error.message);
+        }
     }
 
     async function removeTag(title: Title, tag: Tag) {
-        const tags = title.tags.filter((item) => item.uuid !== tag.uuid);
-        const reqTitle = { ...title, tags };
-        return updateTitle(reqTitle);
+        try {
+            await $fetch<void>("/api/tags", {
+                method: "DELETE",
+                body: {
+                    titleUUID: title.uuid,
+                    tag: tag,
+                },
+            });
+        } catch (e) {
+            const error = e as FetchError;
+            console.error(error.message);
+        }
     }
 
     return {
@@ -185,10 +192,10 @@ export const useTitlesStore = defineStore("titles", () => {
         pages: computed(() => pages.value),
         isLoadingPages: computed(() => isLoadingPages.value),
         isLoadingTitles: computed(() => isLoadingTitles.value),
+        fetchPagesAmount: withLoadingState(isLoadingPages)(fetchPagesAmount),
+        fetchTitles: withLoadingState(isLoadingTitles)(fetchTitles),
         addTitle,
         deleteTitle,
-        fetchTitles,
-        fetchPagesAmount,
         updateTitle,
         addTag,
         removeTag,

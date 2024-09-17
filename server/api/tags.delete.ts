@@ -1,14 +1,14 @@
-import { handlePostTags } from "~/server/services/tags";
+import { handleDeleteTag, handlePostTags } from "~/server/services/tags";
 
 export default defineEventHandler(async (event) => {
     return handleErrors(async () => {
         const body: {
             titleUUID: string;
-            tags: TagPartial[];
+            tag: Tag;
         } = await readBody(event);
 
         return query(async (sqlClient) => {
-            return await handlePostTags(sqlClient, body.tags, body.titleUUID);
+            return await handleDeleteTag(sqlClient, body.tag);
         });
     });
 });

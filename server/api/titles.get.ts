@@ -1,45 +1,33 @@
+import { handleGetTags } from "~/server/services/tags";
 import {
-    getTitles,
-    getAllTitles,
-    getTitlesCount,
+    handleGetTitles,
+    handleGetAllTitles,
+    handleGetTitlesCount,
 } from "~/server/services/titles";
 
-export default defineEventHandler(async (event) => {
-    // TODO: убрать хардкоженные значения
-    const query = getQuery(event);
-    const page = Number(query.page) || 1;
-    const perpage = Number(query.perpage) || 10;
-    const offset = Math.max(page - 1, 0);
+export default defineEventHandler(async (event) =>
+    handleErrors(async () => {
+        // TODO: убрать хардкоженные значения
+        const queryString = getQuery(event);
+        const page = Number(queryString.page) || 1;
+        const perpage = Number(queryString.perpage) || 10;
+        const offset = Math.max(page - 1, 0);
 
-    // TODO: сделать единообразно: либо везде trycatch либо везде handleAsync
+        // TODO: сделать единообразно: либо везде trycatch либо везде handleAsync
 
-    if (query.total) {
-        const [data, error] = await handleAsync(getTitlesCount());
-        if (error) {
-            respondWithError(event);
-            return 0;
+        if (queryString.total) {
+            return query(
+                async (sqlClient) => await handleGetTitlesCount(sqlClient)
+            );
         }
 
-        return data;
-    }
-
-    if (query.page !== undefined) {
-        const [data, error] = await handleAsync(
-            getTitles(perpage, offset * perpage)
-        );
-        if (error) {
-            respondWithError(event);
-            return [];
+        if (queryString.page !== undefined) {
+            return query(
+                async (sqlClient) =>
+                    await handleGetTitles(sqlClient, perpage, offset * perpage)
+            );
         }
 
-        return data;
-    }
-
-    const [data, error] = await handleAsync(getAllTitles());
-    if (error) {
-        respondWithError(event);
-        return [];
-    }
-
-    return data;
-});
+        return query(async (sqlClient) => await handleGetAllTitles(sqlClient));
+    })
+);

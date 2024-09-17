@@ -12,12 +12,14 @@ export async function handlePostTags(
 }
 
 export async function handleDeleteTag(sqlClient: SqlClient, tag: Tag) {
-    validate.tag(tag);
     return await actions.deleteTag(sqlClient, tag);
 }
 
-export async function handleGetTags(sqlClient: SqlClient, titleUUID: string) {
-    return await actions.getTags(sqlClient, titleUUID);
+export async function handleGetTags(
+    sqlClient: SqlClient,
+    titleUUIDs: string | string[]
+) {
+    return await actions.getTags(sqlClient, titleUUIDs);
 }
 
 export async function handleGetTagsCount(

@@ -1,7 +1,7 @@
 import { validate } from "./validation";
 import { actions } from "./actions";
 
-export async function postTitle(
+export async function handlePostTitle(
     sqlClient: SqlClient,
     title: TitleServerPartial,
     titleUUID?: string
@@ -9,23 +9,31 @@ export async function postTitle(
     validate.title(title);
     return await actions.postTitle(sqlClient, title, titleUUID);
 }
-export async function updateTitle(sqlClient: SqlClient, title: TitleServer) {
+export async function handleUpdateTitle(
+    sqlClient: SqlClient,
+    title: TitleServer
+) {
     validate.title(title);
     return await actions.updateTitle(sqlClient, title);
 }
-export async function deleteTitle(sqlClient: SqlClient, titleUUID: string) {
+export async function handleDeleteTitle(
+    sqlClient: SqlClient,
+    titleUUID: string
+) {
     return await actions.deleteTitle(sqlClient, titleUUID);
 }
-export async function getTitles(
+export async function handleGetTitles(
     sqlClient: SqlClient,
     perpage: number,
     offset: number
 ) {
     return await actions.getTitles(sqlClient, perpage, offset);
 }
-export async function getAllTitles(sqlClient: SqlClient) {
+export async function handleGetAllTitles(sqlClient: SqlClient) {
     return await actions.getAllTitles(sqlClient);
 }
-export async function getTitlesCount(sqlClient: SqlClient): Promise<number> {
+export async function handleGetTitlesCount(
+    sqlClient: SqlClient
+): Promise<number> {
     return await actions.getTitlesCount(sqlClient);
 }

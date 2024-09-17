@@ -13,7 +13,7 @@ const tagsSchema = z.array(tagSchema);
 export const validate = {
     tag: (tag: TagPartial) => {
         try {
-            tagSchema.safeParse(tag);
+            tagSchema.parse(tag);
         } catch (e) {
             const error = e as ZodError;
             throw new ValidationError(
@@ -32,7 +32,7 @@ export const validate = {
         }
     },
     async tagsAmount(newTagsAmount: number, titleUUID: string) {
-        const existingTagsAmount = await queryV2(async (sqlClient) => {
+        const existingTagsAmount = await queryDb(async (sqlClient) => {
             return await actions.getTagsCount(sqlClient, titleUUID);
         });
 

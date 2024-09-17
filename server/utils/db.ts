@@ -11,6 +11,8 @@ const pool = new pg.Pool({
 export class CustomQuery<T = unknown> {
     text: string;
     values: unknown[];
+    // приватное поле нужно только для того, чтобы дженерик не терялся
+    // при некоторых операциях с этим классом
     #response = null as T;
     constructor(text: string, values: unknown[] = []) {
         this.text = text;
@@ -57,19 +59,19 @@ export class QueryBatcher<T = []> {
     async executeConsecutively() {
         const results = [];
         for (const customQuery of this.queries) {
-            results.push(await query(customQuery));
+            results.push(await querySingle(customQuery));
         }
         return results as T;
     }
 
     async executeInParallel() {
         return Promise.allSettled(
-            this.queries.map((customQuery) => query(customQuery))
+            this.queries.map((customQuery) => querySingle(customQuery))
         ) as unknown as T;
     }
 
     async executeInTransaction() {
-        return (await transaction(this.queries)) as T;
+        return (await transactionOld(this.queries)) as T;
     }
 
     async execute() {
@@ -115,10 +117,10 @@ type TransactionResponse<U extends any[] | readonly any[]> = [
     },
 ];
 
-export async function query<T>(customQuery: CustomQuery<T>) {
+export async function querySingle<T>(customQuery: CustomQuery<T>) {
     return (await pool.query(customQuery.text, customQuery.values)).rows as T;
 }
-export async function transaction<
+export async function transactionOld<
     T extends CustomQuery[] | readonly CustomQuery[],
 >(customQueries: T): Promise<TransactionResponse<T>> {
     if (customQueries.length === 0) {
@@ -141,7 +143,7 @@ export async function transaction<
     }
 }
 
-export async function transactionV2<T>(
+export async function transaction<T>(
     txFunc: (storageClient: SqlClient) => Promise<T>
 ): Promise<T> {
     const client = await pool.connect();
@@ -157,9 +159,9 @@ export async function transactionV2<T>(
         client.release();
     }
 }
-export async function queryV2<T>(
-    queryFunc: (sqlClient: SqlClient) => Promise<T>
-): Promise<T> {
+export async function query<T>(
+    queryFunc: (sqlClient: SqlClient) => T
+): Promise<Awaited<T>> {
     const client = await getSqlClient();
     const result = await queryFunc(client);
     client.release();

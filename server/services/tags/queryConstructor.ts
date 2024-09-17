@@ -33,12 +33,12 @@ export const construct = {
             tag.title_uuid,
         ]);
     },
-    getTags(titleUUID: string): CustomQuery<Tag[]> {
+    getTags(titleUUIDs: string | string[]): CustomQuery<Tag[]> {
         return new CustomQuery<Tag[]>(
             `SELECT * FROM tags
-            WHERE title_uuid = $1
+            WHERE ${Array.isArray(titleUUIDs) ? "title_uuid IN $1" : "title_uuid = $1"}
             ORDER BY created_at, id DESC`,
-            [titleUUID]
+            [titleUUIDs]
         );
     },
     getTagsCount(titleUUID: string): CustomQuery<[{ count: number }]> {

@@ -25,7 +25,7 @@
                                 props.poster?.img &&
                                 props.poster?.img !== imgLink
                                     ? 'mdi-undo'
-                                    : null
+                                    : undefined
                             "
                             @click:append-inner="
                                 imgLink = props.poster?.img || ''

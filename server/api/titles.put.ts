@@ -1,12 +1,11 @@
-import { updateTitle } from "~/server/services/titles";
+import { handleUpdateTitle } from "~/server/services/titles";
 
-export default defineEventHandler(async (event) => {
-    const title: TitleServer = await readBody(event);
+export default defineEventHandler(async (event) =>
+    handleErrors(async () => {
+        const title: TitleServer = await readBody(event);
 
-    const [data, error] = await handleAsync(updateTitle(title));
-    if (error) {
-        return respondWithError(event);
-    }
-
-    return data;
-});
+        return query(
+            async (sqlClient) => await handleUpdateTitle(sqlClient, title)
+        );
+    })
+);

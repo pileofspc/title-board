@@ -2,6 +2,7 @@
     "extends": "../.nuxt/tsconfig.server.json",
     "compilerOptions": {
         "noUncheckedIndexedAccess": true,
-        "noErrorTruncation": true
+        "noErrorTruncation": true,
+        "moduleDetection": "auto"
     }
 }
