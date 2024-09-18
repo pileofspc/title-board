@@ -14,6 +14,10 @@ export const useTitlesStore = defineStore("titles", () => {
         default: () => [],
     });
 
+    // const titles = ref<Title[]>([]);
+    // fetchPagesAmount();
+    // fetchTitles((useRoute().query.page || 1) as number);
+
     // TODO: Привести Title и TitleServer к единому виду или хотя бы прилично переделать эту функцию с правильной типизацией
     function mapToClient(titles: TitleServer[]): Title[] {
         return titles.map((item) => {

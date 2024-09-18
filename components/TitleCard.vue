@@ -52,17 +52,20 @@
                     </VChip>
                 </div>
 
-                <VRating
-                    :disabled="props.loading"
-                    v-model="props.title.rating"
-                    @update:model-value="onRatingChange"
-                    hover
-                    half-increments
-                    size="30"
-                    active-color="yellow-darken-3"
-                    color="blue-grey"
-                    class="mt-3"
-                />
+                <!-- client only из-за ошибок гидратации во vuetify в этом компоненте -->
+                <ClientOnly>
+                    <VRating
+                        :disabled="props.loading"
+                        v-model="props.title.rating"
+                        @update:model-value="onRatingChange"
+                        hover
+                        half-increments
+                        size="30"
+                        active-color="yellow-darken-3"
+                        color="blue-grey"
+                        class="mt-3"
+                    />
+                </ClientOnly>
 
                 <div class="title-item__controls">
                     <template v-if="props.isPlaceholder">

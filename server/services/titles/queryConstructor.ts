@@ -4,7 +4,7 @@ import { CustomQuery } from "#imports";
 export const construct = {
     getTitles(perpage: number, offset: number): CustomQuery<Title[]> {
         return new CustomQuery(
-            `SELECT titles.*, json_agg(tags.*) AS tags FROM titles
+            `SELECT titles.*, COALESCE(json_agg(tags.*) FILTER(WHERE tags.title_uuid IS NOT NULL), '[]') AS tags FROM titles
             LEFT JOIN tags ON titles.uuid = tags.title_uuid
             GROUP BY titles.uuid
             ORDER BY titles.id DESC LIMIT $1 OFFSET $2`,
@@ -18,8 +18,8 @@ export const construct = {
             ORDER BY titles.id DESC`);
     },
     getAllTitlesWithoutTags(): CustomQuery<Title[]> {
-        return new CustomQuery(`SELECT * FROM titles
-            LEFT JOIN tags ON titles.uuid = tags.title_uuid
+        return new CustomQuery(`
+            SELECT * FROM titles
             ORDER BY titles.id DESC`);
     },
     getTitlesCount(): CustomQuery<[{ count: number }]> {

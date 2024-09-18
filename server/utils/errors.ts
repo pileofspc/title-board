@@ -12,7 +12,8 @@ export class ValidationErrorResponse {
 
 export async function handleErrors<T>(func: () => Promise<T>) {
     try {
-        return await func();
+        const result = await func();
+        return result;
     } catch (error) {
         if (error instanceof ValidationError) {
             return new ValidationErrorResponse();

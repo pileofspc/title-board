@@ -5,8 +5,8 @@ import { actions } from "./actions";
 const tagSchema = z.object({
     color: z.string().refine((color) => colors.includes(color as Color)),
     text: z.string().max(50),
-    title_uuid: z.string().uuid().optional(),
-    uuid: z.string().uuid().optional(),
+    title_uuid: z.string().uuid().nullish(),
+    uuid: z.string().uuid().nullish(),
 });
 const tagsSchema = z.array(tagSchema);
 
@@ -32,7 +32,7 @@ export const validate = {
         }
     },
     async tagsAmount(newTagsAmount: number, titleUUID: string) {
-        const existingTagsAmount = await queryDb(async (sqlClient) => {
+        const existingTagsAmount = await query(async (sqlClient) => {
             return await actions.getTagsCount(sqlClient, titleUUID);
         });
 
