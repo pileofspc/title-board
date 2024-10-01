@@ -1,18 +1,16 @@
+import { TTILES_PER_PAGE } from "~/constants";
 import {
     handleGetTitles,
     handleGetAllTitles,
     handleGetTitlesCount,
 } from "~/server/services/titles";
 
-export default defineEventHandler(async (event) =>
-    handleErrors(async () => {
-        // TODO: убрать хардкоженные значения
+export default defineEventHandler(
+    withErrorHandling(async (event) => {
         const queryString = getQuery(event);
         const page = Number(queryString.page) || 1;
-        const perpage = Number(queryString.perpage) || 10;
+        const perpage = Number(queryString.perpage) || TTILES_PER_PAGE;
         const offset = Math.max(page - 1, 0);
-
-        // TODO: сделать единообразно: либо везде trycatch либо везде handleAsync
 
         if (queryString.total) {
             return query(

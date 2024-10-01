@@ -1,7 +1,8 @@
 import { handlePostTags } from "~/server/services/tags";
+import { validate } from "~/server/services/tags/validation";
 
-export default defineEventHandler(async (event) => {
-    return handleErrors(async () => {
+export default defineEventHandler(
+    withErrorHandling(async (event) => {
         const body: {
             titleUUID: string;
             tags: TagPartial[];
@@ -10,5 +11,5 @@ export default defineEventHandler(async (event) => {
         return query(async (sqlClient) => {
             return await handlePostTags(sqlClient, body.tags, body.titleUUID);
         });
-    });
-});
+    })
+);

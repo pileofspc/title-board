@@ -35,12 +35,14 @@ export function getCoords(elem: Element) {
     };
 }
 export function withLoadingState(loading: Ref<boolean>) {
-    return <T extends (...args: any[]) => Promise<any>>(fn: T) => {
-        return async function decorated(...args: Parameters<T>) {
-            loading.value = true;
-            const awaited = await fn(...args);
-            loading.value = false;
-            return awaited as AwaitedFix<ReturnType<T>>;
+    return <A extends unknown[], R>(initialFn: (...args: A) => Promise<R>) => {
+        return async function wrapper(...args: A) {
+            try {
+                loading.value = true;
+                return await initialFn(...args);
+            } finally {
+                loading.value = false;
+            }
         };
     };
 }

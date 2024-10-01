@@ -2,16 +2,16 @@ import { v4 as uuidv4 } from "uuid";
 import { handlePostTags } from "~/server/services/tags";
 import { handlePostTitle } from "~/server/services/titles";
 
-export default defineEventHandler(async (event) =>
-    handleErrors(async () => {
-        const title: TitleServerPartial = await readBody(event);
+export default defineEventHandler(
+    withErrorHandling(async (event) => {
+        const body: TitleServerPartial = await readBody(event);
         const uuid = uuidv4();
-        title.uuid = uuid;
+        body.uuid = uuid;
 
         return await transaction(async (sqlClient) => {
             return [
-                await handlePostTitle(sqlClient, title, uuid),
-                await handlePostTags(sqlClient, title.tags, uuid),
+                await handlePostTitle(sqlClient, body, uuid),
+                await handlePostTags(sqlClient, body.tags, uuid),
             ] as const;
         });
     })

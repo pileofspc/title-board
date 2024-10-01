@@ -1,5 +1,6 @@
 import { validate } from "./validation";
 import { actions } from "./actions";
+import { checks } from "~/server/services/tags/checks";
 
 export async function handlePostTags(
     sqlClient: SqlClient,
@@ -7,7 +8,7 @@ export async function handlePostTags(
     titleUUID: string
 ) {
     validate.tags(tags);
-    await validate.tagsAmount(tags.length, titleUUID);
+    await checks.tagsAmountNotExceeded(tags.length, titleUUID);
     return await actions.postTags(sqlClient, tags, titleUUID);
 }
 

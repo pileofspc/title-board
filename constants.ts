@@ -1,3 +1,11 @@
+export const apiEndpoints = {
+    titles: "http://localhost:3000/api/titles",
+    tags: "http://localhost:3000/api/tags",
+} as const;
+
+export const MAX_TAGS_PER_TITLE = 5;
+export const TTILES_PER_PAGE = 10;
+
 export type Colors = typeof colors;
 export const colors = ["red", "green", "blue", "indigo", "amber"] as const;
 // TODO: Поменять везде цвета на primary, secondary и тд
@@ -26,11 +34,6 @@ export const statuses = {
 
 // TODO: Убрать все захардкоженные строки, связанные с цветами и статусами
 
-export const apiEndpoints = {
-    titles: "http://localhost:3000/api/titles",
-    tags: "http://localhost:3000/api/tags",
-} as const;
-
 export const defaultTitle = {
     name: "Новый тайтл",
     description: "Описание нового тайтла",
@@ -39,5 +42,3 @@ export const defaultTitle = {
     pos_y: 50,
     tags: [],
 };
-
-export const MAX_TAGS_PER_TITLE = 5;

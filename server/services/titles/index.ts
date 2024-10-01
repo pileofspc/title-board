@@ -9,10 +9,7 @@ export async function handlePostTitle(
     validate.title(title);
     return await actions.postTitle(sqlClient, title, titleUUID);
 }
-export async function handleUpdateTitle(
-    sqlClient: SqlClient,
-    title: TitleServer
-) {
+export async function handleUpdateTitle(sqlClient: SqlClient, title: Title) {
     validate.title(title);
     return await actions.updateTitle(sqlClient, title);
 }

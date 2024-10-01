@@ -14,10 +14,6 @@ export const useTitlesStore = defineStore("titles", () => {
         default: () => [],
     });
 
-    // const titles = ref<Title[]>([]);
-    // fetchPagesAmount();
-    // fetchTitles((useRoute().query.page || 1) as number);
-
     // TODO: Привести Title и TitleServer к единому виду или хотя бы прилично переделать эту функцию с правильной типизацией
     function mapToClient(titles: TitleServer[]): Title[] {
         return titles.map((item) => {
@@ -85,7 +81,7 @@ export const useTitlesStore = defineStore("titles", () => {
 
     async function fetchTitles(page?: number) {
         try {
-            const response = await $fetch<TitleServer[]>("/api/titles", {
+            const response = await $fetch<Title[]>("/api/titles", {
                 params: {
                     perpage: String(PER_PAGE),
                     page:
@@ -105,7 +101,7 @@ export const useTitlesStore = defineStore("titles", () => {
         const mappedTitle = mapToServerPartial([title])[0];
 
         try {
-            const response = await $fetch<TitleServer>("/api/titles", {
+            const response = await $fetch<Title>("/api/titles", {
                 method: "POST",
                 body: mappedTitle,
             });
@@ -121,7 +117,7 @@ export const useTitlesStore = defineStore("titles", () => {
 
     async function deleteTitle(titleId: string) {
         try {
-            await $fetch<TitleServer>("/api/titles", {
+            await $fetch<Title>("/api/titles", {
                 method: "DELETE",
                 body: { uuid: titleId },
             });
@@ -135,12 +131,12 @@ export const useTitlesStore = defineStore("titles", () => {
         const mappedTitle = mapToServerPartial([title])[0];
 
         try {
-            const response = await $fetch<TitleServer>("/api/titles", {
+            const response = await $fetch<[Title]>("/api/titles", {
                 method: "PUT",
                 body: mappedTitle,
             });
 
-            const mappedResponse = mapToClient([response])[0];
+            const mappedResponse = mapToClient(response)[0];
 
             const foundIndex = titles.value.findIndex(
                 (item) => item.uuid === mappedResponse?.uuid
@@ -151,10 +147,7 @@ export const useTitlesStore = defineStore("titles", () => {
             }
         } catch (e) {
             const error = e as FetchError;
-            console.error(
-                `Ошибка при запросе на сервер: ${error.message}
-                    Статус-код: ${error.statusCode}`
-            );
+            console.error(error);
         }
     }
 

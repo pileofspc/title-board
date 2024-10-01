@@ -8,7 +8,7 @@ export const actions = {
     ) {
         return await sqlClient.query(construct.postTitle(title, titleUUID));
     },
-    async updateTitle(sqlClient: SqlClient, title: TitleServer) {
+    async updateTitle(sqlClient: SqlClient, title: Title) {
         return await sqlClient.query(construct.updateTitle(title));
     },
     async deleteTitle(sqlClient: SqlClient, titleUUID: string) {
