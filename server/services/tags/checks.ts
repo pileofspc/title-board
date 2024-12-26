@@ -10,7 +10,7 @@ export const checks = {
         if (existingTagsAmount + newTagsAmount <= MAX_TAGS_PER_TITLE) {
             return true;
         } else {
-            throw new BusinessError([
+            throw new DomainError([
                 `Превышен допустимый максимум тегов - ${MAX_TAGS_PER_TITLE} на один тайтл`,
             ]);
         }

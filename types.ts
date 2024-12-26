@@ -82,11 +82,11 @@ type TitleServer = {
     name: string;
     description: string;
     status: TitleStatus;
-    rating?: number;
-    link?: string;
-    img?: string;
-    pos_x?: number;
-    pos_y?: number;
+    rating?: number | null;
+    link?: string | null;
+    img?: string | null;
+    pos_x?: number | null;
+    pos_y?: number | null;
     tags: Tag[];
 };
 type TitleServerPartial = Overwrite<

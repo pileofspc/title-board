@@ -1,24 +1,26 @@
 import type { H3Event } from "h3";
+import { ZodError } from "zod";
 
-export class DomainError extends Error {
-    name = "Business Error";
+export class BaseError extends Error {
+    name = "BaseError";
+    message: string;
     issues: string[];
     response: string = "Это показываем пользователю";
-    constructor(issues: string[]) {
+    constructor(issues: string[], cause?: Error) {
         super();
+        this.cause = cause;
         this.issues = issues;
         this.message = this.name + ": " + this.issues.join("; ");
     }
 }
-export class ValidationError extends Error {
-    name = "Validation Error";
-    issues: string[];
-    response: string = "Это показываем пользователю";
-    constructor(issues: string[]) {
-        super();
-        this.issues = issues;
-        this.message = this.name + ": " + this.issues.join("; ");
-    }
+export class DataAccessError extends BaseError {
+    name = "DataAccessError";
+}
+export class ValidationError extends BaseError {
+    name = "ValidationError";
+}
+export class DomainError extends BaseError {
+    name = "DomainError";
 }
 
 export function withErrorHandling<A extends unknown[], R>(
@@ -34,6 +36,22 @@ export function withErrorHandling<A extends unknown[], R>(
             }
 
             throw error;
+        }
+    };
+}
+
+export function withRethrowingAsValidationError<A extends unknown[], R>(
+    fn: (...args: A) => R
+) {
+    return function (...args: A): R {
+        try {
+            return fn(...args);
+        } catch (e) {
+            const error = e as ZodError;
+            throw new ValidationError(
+                error.issues.map((issue) => issue.message),
+                error
+            );
         }
     };
 }

@@ -7,18 +7,18 @@ import {
 
 export default defineEventHandler(
     withErrorHandling(async (event) => {
-        const queryString = getQuery(event);
-        const page = Number(queryString.page) || 1;
-        const perpage = Number(queryString.perpage) || TTILES_PER_PAGE;
+        const queryObject = getQuery(event);
+        const page = Number(queryObject.page) || 1;
+        const perpage = Number(queryObject.perpage) || TTILES_PER_PAGE;
         const offset = Math.max(page - 1, 0);
 
-        if (queryString.total) {
+        if (queryObject.total) {
             return query(
                 async (sqlClient) => await handleGetTitlesCount(sqlClient)
             );
         }
 
-        if (queryString.page !== undefined) {
+        if (queryObject.page !== undefined) {
             return query(
                 async (sqlClient) =>
                     await handleGetTitles(sqlClient, perpage, offset * perpage)

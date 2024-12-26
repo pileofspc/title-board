@@ -14,15 +14,17 @@ export default defineNuxtConfig({
         dirs: ["./stores"],
     },
 
-    // vite: {
-    //     esbuild: {
-    //         tsconfigRaw: {
-    //             compilerOptions: {
-    //                 experimentalDecorators: true,
-    //             },
-    //         },
-    //     },
-    // },
+    nitro: {
+        esbuild: {
+            options: {
+                tsconfigRaw: {
+                    compilerOptions: {
+                        experimentalDecorators: true,
+                    },
+                },
+            },
+        },
+    },
 
     vuetify: {
         vuetifyOptions: {

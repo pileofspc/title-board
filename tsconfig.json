@@ -3,6 +3,7 @@
     "compilerOptions": {
         "noUncheckedIndexedAccess": true,
         "noErrorTruncation": true,
-        "moduleDetection": "auto"
+        "moduleDetection": "auto",
+        "experimentalDecorators": true
     }
 }

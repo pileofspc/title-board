@@ -28,9 +28,9 @@ export const construct = {
 
         return new CustomQuery<Tag[]>(text, values);
     },
-    deleteTag(tag: Tag): CustomQuery<void> {
+    deleteTag(tagUUID: string): CustomQuery<void> {
         return new CustomQuery<void>("DELETE FROM tags WHERE title_uuid = $1", [
-            tag.title_uuid,
+            tagUUID,
         ]);
     },
     getTags(titleUUIDs: string | string[]): CustomQuery<Tag[]> {

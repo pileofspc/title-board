@@ -2,8 +2,8 @@ import { z, ZodError } from "zod";
 import { titleStatuses } from "~/constants";
 
 const titleSchema = z.object({
-    uuid: z.string().uuid().nullish(),
-    id: z.string().or(z.number()).nullish(),
+    uuid: z.string().uuid().optional(),
+    id: z.string().optional(),
     name: z.string().max(255),
     description: z.string().max(1024),
     status: z
@@ -14,6 +14,7 @@ const titleSchema = z.object({
         ),
     img: z.string().max(1024).nullish(),
     link: z.string().max(1024).nullish(),
+    // TODO: сделать трансформации и уточнить валидацию
     pos_x: z.string().or(z.number()).nullish(),
     pos_y: z.string().or(z.number()).nullish(),
     rating: z.string().or(z.number()).nullish(),
@@ -21,7 +22,7 @@ const titleSchema = z.object({
 const titlesSchema = z.array(titleSchema);
 
 export const validate = {
-    title: (title: TitlePartial) => {
+    title: (title: unknown) => {
         try {
             return titleSchema.parse(title);
         } catch (e) {
@@ -34,7 +35,7 @@ export const validate = {
             throw e;
         }
     },
-    titles: (titles: TitlePartial[]) => {
+    titles: (titles: unknown) => {
         try {
             return titlesSchema.parse(titles);
         } catch (e) {

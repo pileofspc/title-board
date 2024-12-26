@@ -144,7 +144,7 @@ export async function transactionOld<
 }
 
 export async function transaction<T>(
-    txFunc: (storageClient: SqlClient) => Promise<T>
+    txFunc: (sqlClient: SqlClient) => Promise<T>
 ): Promise<T> {
     const client = await pool.connect();
     try {
@@ -160,13 +160,15 @@ export async function transaction<T>(
     }
 }
 export async function query<T>(
-    queryFunc: (sqlClient: SqlClient) => T
-): Promise<Awaited<T>> {
+    queryFunc: (sqlClient: SqlClient) => Promise<T>
+): Promise<T> {
     const client = await getSqlClient();
     const result = await queryFunc(client);
     client.release();
     return result;
 }
+
+// TODO: Если транзакция не нужна, то не нужно держать один клиент всё время открытым
 
 export async function getSqlClient(): Promise<SqlClient> {
     const client = await pool.connect();
